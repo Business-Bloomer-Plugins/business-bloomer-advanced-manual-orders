@@ -100,8 +100,17 @@ function amo_create_draft( $args ) {
 	}
 
 	if ( 'auto-draft' !== $args['status'] ) {
+		// A copy isn't a new sale: no "new order" or "order received" emails.
+		foreach ( WC()->mailer()->get_emails() as $email ) {
+			add_filter( 'woocommerce_email_enabled_' . $email->id, '__return_false' );
+		}
+
 		$order->set_status( $args['status'] );
 		$order->save();
+
+		foreach ( WC()->mailer()->get_emails() as $email ) {
+			remove_filter( 'woocommerce_email_enabled_' . $email->id, '__return_false' );
+		}
 	}
 
 	do_action( 'amo_draft_created', $order, $args );
@@ -265,7 +274,7 @@ function amo_action_duplicate( $order ) {
 			array(
 				'source' => $order,
 				'copy'   => 'all',
-				'status' => 'pending',
+				'status' => amo_duplicate_status(),
 			)
 		)
 	);
@@ -520,7 +529,7 @@ function amo_handle_duplicate_link() {
 		array(
 			'source' => $order,
 			'copy'   => 'all',
-			'status' => 'pending',
+			'status' => amo_duplicate_status(),
 		)
 	);
 

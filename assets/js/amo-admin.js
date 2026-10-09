@@ -384,7 +384,7 @@ jQuery( function ( $ ) {
 	var $payLink = $( '.wc-order-status label a[href*="pay_for_order"]' );
 	if ( $payLink.length && navigator.clipboard ) {
 		var $copy = $( '<button type="button" class="button-link amo-copy-link"></button>' ).text( i18n.copyLink );
-		$payLink.after( $copy );
+		$payLink.closest( '.wc-order-status' ).append( $copy );
 		$copy.on( 'click', function ( e ) {
 			e.preventDefault();
 			navigator.clipboard.writeText( $payLink.attr( 'href' ) ).then( function () {

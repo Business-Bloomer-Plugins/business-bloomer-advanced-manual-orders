@@ -98,11 +98,6 @@
 	z-index: 100001;
 }
 
-.wc-order-status .amo-copy-link {
-	float: right;
-	margin-right: 8px;
-	font-weight: 400;
-}
 
 
 .amo-copy {
@@ -141,13 +136,14 @@
 
 .amo-currency.amo-advanced,
 .amo-currency-off {
-	padding: 8px 10px;
+	padding: 8px 12px 8px 14px;
 	background: var(--amo-accent-soft);
 	border-left: 3px solid var(--amo-accent);
 }
 
-#order_data .amo-currency-wrap p {
+#order_data .order_data_column .amo-currency-wrap p {
 	margin: 9px 0 0;
+	padding: 8px 12px 8px 14px !important; /* WooCommerce zeroes padding in this column. */
 }
 
 .amo-currency label {
@@ -225,9 +221,27 @@
 	background: var(--amo-accent-soft);
 }
 
-.wc-order-status .amo-copy-link {
+#order_data .wc-order-status .amo-copy-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 6px;
 	color: var(--amo-accent);
 	font-weight: 600;
+	text-decoration: none;
+}
+
+#order_data .wc-order-status .amo-copy-link:hover {
+	color: var(--amo-accent-hover);
+	text-decoration: underline;
+}
+
+#order_data .wc-order-status .amo-copy-link::before {
+	font-family: dashicons;
+	content: "\f105";
+	font-size: 16px;
+	font-weight: 400;
+	text-decoration: none;
 }
 
 /* Duplicate button in the orders list and the preview. */

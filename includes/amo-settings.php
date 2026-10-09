@@ -20,6 +20,7 @@ function amo_get_option( $key ) {
 		'auto_totals'    => 'yes',
 		'guest_pay'      => 'yes',
 		'currency'       => 'no',
+		'dup_status'     => 'pending',
 		'currencies'     => array(),
 		'same_price_fix' => 'yes',
 	);
@@ -82,6 +83,16 @@ function amo_section_settings( $settings, $section ) {
 			'id'      => 'amo_popup',
 			'type'    => 'checkbox',
 			'default' => 'yes',
+		),
+		array(
+			'title'    => __( 'Duplicate order status', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'     => __( 'Status of the copy made by "Duplicate". No emails are sent for it. On hold, Processing and Completed reduce stock, as for any order.', 'advanced-manual-orders-for-woocommerce' ),
+			'id'       => 'amo_dup_status',
+			'type'     => 'select',
+			'class'    => 'wc-enhanced-select',
+			'options'  => amo_duplicate_statuses(),
+			'default'  => 'pending',
+			'desc_tip' => true,
 		),
 		array(
 			'title'   => __( 'Taxes and totals', 'advanced-manual-orders-for-woocommerce' ),
@@ -256,4 +267,32 @@ function amo_currency_options( $selected ) {
 		}
 		echo '</optgroup>';
 	}
+}
+
+/**
+ * Statuses a duplicate can start in, without the wc- prefix.
+ *
+ * @return array
+ */
+function amo_duplicate_statuses() {
+	$statuses = array();
+
+	foreach ( wc_get_order_statuses() as $key => $label ) {
+		$status = 'wc-' === substr( $key, 0, 3 ) ? substr( $key, 3 ) : $key;
+		if ( ! in_array( $status, array( 'refunded', 'failed', 'cancelled', 'checkout-draft' ), true ) ) {
+			$statuses[ $status ] = $label;
+		}
+	}
+
+	return $statuses;
+}
+
+/**
+ * Status for a new duplicate, from the setting.
+ *
+ * @return string
+ */
+function amo_duplicate_status() {
+	$status = amo_get_option( 'dup_status' );
+	return array_key_exists( $status, amo_duplicate_statuses() ) ? $status : 'pending';
 }
