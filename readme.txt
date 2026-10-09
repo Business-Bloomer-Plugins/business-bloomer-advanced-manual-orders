@@ -1,6 +1,6 @@
 === Manual Order Superpowers for WooCommerce ===
 Contributors: businessbloomer
-Tags: manual order, phone order, admin order, currency, shipping
+Tags: manual order, phone order, admin order, currency, add products
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -16,9 +16,10 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 
 = What it adds =
 
-* **New order form:** click "Add order" and choose the customer, the currency and an old order to copy products from. Their saved addresses are filled in.
-* **Currency per order:** pick any currency for a manual order, on the form or on the order screen while the order is unpaid.
-* **Real shipping rates:** "Calculate shipping" shows the rates of your shipping zones for these items and this address, the same ones checkout would show. Pick one and it's added with its tax.
+* **New order form:** click "Add order", on the orders list or on an order, and choose the customer, the currency and an old order to copy products from. Pick the order from your latest 10 or search by name, email or number. Saved addresses are filled in.
+* **Add products in one click:** an "Add a product" box always sits above the order items. Best sellers come first, or type a name or SKU. Every variation is listed on its own, "Any" attributes included, so there's nothing else to pick. Pick a product that's already on the order and its quantity goes up.
+* **Currency per order:** pick any currency for a manual order, on the form or on the order screen while the order is unpaid. The currencies your store sells in come first, read from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster.
+* **Real shipping rates:** "Calculate shipping", next to Recalculate, shows the rates of your shipping zones for these items and this address, the same ones checkout would show. Pick one and it's added with its tax.
 * **Taxes that update on their own:** add or remove items, change quantities or the address, and taxes and totals are recalculated. No more Recalculate button.
 * **Duplicate order:** an exact copy, same customer, items, prices, shipping and fees.
 * **New order for this customer:** a fresh order with the same customer and addresses.
@@ -49,6 +50,10 @@ It only applies to orders created in the admin, and only with the full payment l
 = Does it work with HPOS? =
 
 Yes, with both order storage types.
+
+= My multi-currency plugin isn't listed. =
+
+Add its currencies in the settings and they show at the top of the list. Developers can use the `mosw_store_currencies` filter.
 
 == Changelog ==
 

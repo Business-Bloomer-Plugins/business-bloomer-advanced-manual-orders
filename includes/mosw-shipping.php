@@ -9,15 +9,17 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'woocommerce_order_item_add_line_buttons', 'mosw_shipping_button' );
+add_action( 'woocommerce_order_item_add_action_buttons', 'mosw_shipping_button' );
 add_action( 'wp_ajax_mosw_shipping_rates', 'mosw_ajax_shipping_rates' );
 add_action( 'wp_ajax_mosw_add_shipping', 'mosw_ajax_add_shipping' );
 
 /**
- * "Calculate shipping" button next to "Add shipping".
+ * "Calculate shipping" button next to "Recalculate", always in view.
+ *
+ * @param WC_Order $order Order.
  */
-function mosw_shipping_button() {
-	if ( ! wc_shipping_enabled() ) {
+function mosw_shipping_button( $order ) {
+	if ( ! wc_shipping_enabled() || ! $order->is_editable() ) {
 		return;
 	}
 	echo '<button type="button" class="button mosw-calc-shipping">' . esc_html__( 'Calculate shipping', 'manual-order-superpowers-for-woocommerce' ) . '</button>';

@@ -26,19 +26,38 @@ jQuery( function ( $ ) {
 	} );
 
 	$( document ).on( 'keydown', function ( e ) {
-		if ( 'Escape' === e.key ) {
+		// Escape in an open dropdown only closes the dropdown.
+		if ( 'Escape' === e.key && ! $( '.select2-container--open' ).length ) {
 			closeModal( $( '.mosw-modal:not([hidden])' ) );
 		}
 	} );
 
-	/* ---------- Orders list: "Add order" form ---------- */
+	/* ---------- "Add order" form, on the orders list and the order screen ---------- */
 
-	if ( 'list' === mosw.screen && mosw.popup ) {
-		var $form = $( '#mosw-new-order' );
+	var $form = $( '#mosw-new-order' );
+
+	if ( mosw.popup && $form.length ) {
+		$form.find( '#mosw_copy_from' ).selectWoo( {
+			width: '100%',
+			allowClear: true,
+			placeholder: $form.find( '#mosw_copy_from' ).data( 'placeholder' ),
+			minimumInputLength: 0,
+			ajax: {
+				url: mosw.ajaxUrl,
+				dataType: 'json',
+				delay: 250,
+				data: function ( params ) {
+					return { action: 'mosw_search_orders', security: mosw.nonce, term: params.term || '' };
+				},
+				processResults: function ( data ) {
+					return data;
+				}
+			}
+		} );
 
 		$( document ).on( 'click', 'a.page-title-action', function ( e ) {
 			var href = $( this ).attr( 'href' ) || '';
-			if ( ! $form.length || ! /action=new|post-new\.php\?post_type=shop_order/.test( href ) ) {
+			if ( ! /action=new|post-new\.php\?post_type=shop_order/.test( href ) ) {
 				return;
 			}
 			e.preventDefault();
@@ -117,7 +136,7 @@ jQuery( function ( $ ) {
 	}
 
 	// Core requests after which totals are stale.
-	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|mosw_add_shipping)(&|$)/;
+	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|mosw_add_shipping|mosw_add_product)(&|$)/;
 
 	$( document ).ajaxComplete( function ( e, xhr, settings ) {
 		if ( ! xhr || 200 !== xhr.status || 'string' !== typeof settings.data || ! stale.test( settings.data ) ) {
@@ -137,6 +156,83 @@ jQuery( function ( $ ) {
 			clearTimeout( timer );
 			timer = setTimeout( recalculate, 600 );
 		} );
+	}
+
+	/* ---------- "Add a product" box ---------- */
+
+	function quickAdd() {
+		var $inside = $items.find( '.inside' );
+		var $row = $inside.find( '.woocommerce_order_items_wrapper' );
+
+		if ( ! $row.length || $inside.find( '.mosw-quick-add' ).length || ! $inside.find( 'button.add-line-item' ).length ) {
+			return;
+		}
+
+		var $box = $( '<div class="wc-order-data-row mosw-quick-add"><select class="mosw-product-search"></select><input type="number" class="mosw-qty" value="1" min="1" step="1"></div>' );
+		$box.find( '.mosw-qty' ).attr( { title: i18n.qty, 'aria-label': i18n.qty } );
+		$row.before( $box );
+
+		var $select = $box.find( 'select' );
+		$select.attr( 'aria-label', i18n.addProduct ).selectWoo( {
+			width: '100%',
+			placeholder: i18n.addProduct,
+			minimumInputLength: 0,
+			language: {
+				searching: function () {
+					return i18n.searching;
+				},
+				noResults: function () {
+					return i18n.noResults;
+				}
+			},
+			ajax: {
+				url: mosw.ajaxUrl,
+				dataType: 'json',
+				delay: 250,
+				cache: true,
+				data: function ( params ) {
+					return { action: 'mosw_search_products', security: mosw.nonce, term: params.term || '', page: params.page || 1 };
+				},
+				processResults: function ( data ) {
+					return data;
+				}
+			}
+		} );
+
+		$select.on( 'select2:select', function ( e ) {
+			var data = {
+				action: 'mosw_add_product',
+				security: mosw.nonce,
+				order_id: orderId,
+				product_id: e.params.data.id,
+				qty: $box.find( '.mosw-qty' ).val() || 1
+			};
+
+			// Unsaved edits to the items, as WooCommerce sends them.
+			if ( 'true' === $items.find( 'button.cancel-action' ).attr( 'data-reload' ) ) {
+				data.items = $( 'table.woocommerce_order_items :input[name], .wc-order-totals-items :input[name]' ).serialize();
+			}
+
+			block();
+			$.post( mosw.ajaxUrl, data ).done( function ( res ) {
+				if ( ! res || ! res.success ) {
+					window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
+					return;
+				}
+				$items.find( '.inside' ).empty().append( res.data.html );
+				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.data.notes_html );
+				$items.trigger( 'wc_order_items_reloaded' );
+				$items.find( '.mosw-product-search' ).selectWoo( 'focus' );
+			} ).fail( function () {
+				window.alert( i18n.error );
+			} ).always( unblock );
+		} );
+	}
+
+	// The items box is re-rendered after every change, so put the box back each time.
+	quickAdd();
+	if ( $items.length && window.MutationObserver ) {
+		new MutationObserver( quickAdd ).observe( $items.find( '.inside' )[ 0 ], { childList: true } );
 	}
 
 	/* ---------- Currency ---------- */

@@ -14,6 +14,7 @@ add_filter( 'redirect_post_location', 'mosw_redirect_to_new_draft' );
 add_filter( 'woocommerce_redirect_order_location', 'mosw_redirect_to_new_draft' );
 add_action( 'woocommerce_admin_order_data_after_order_details', 'mosw_currency_field' );
 add_action( 'wp_ajax_mosw_set_currency', 'mosw_ajax_set_currency' );
+add_action( 'wp_ajax_mosw_search_orders', 'mosw_ajax_search_orders' );
 
 /**
  * Creates a draft order, the same kind WooCommerce makes when you click "Add order".
@@ -296,19 +297,11 @@ function mosw_currency_field( $order ) {
 		return;
 	}
 
-	$current    = $order->get_currency();
-	$currencies = mosw_currencies( $current );
-
-	if ( count( $currencies ) < 2 ) {
-		return;
-	}
 	?>
 	<p class="form-field form-field-wide mosw-currency">
 		<label for="mosw_currency"><?php esc_html_e( 'Currency', 'manual-order-superpowers-for-woocommerce' ); ?></label>
 		<select id="mosw_currency" name="mosw_currency" class="wc-enhanced-select">
-			<?php foreach ( $currencies as $code => $name ) : ?>
-				<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $code, $current ); ?>><?php echo esc_html( $name . ' (' . get_woocommerce_currency_symbol( $code ) . ')' ); ?></option>
-			<?php endforeach; ?>
+			<?php mosw_currency_options( $order->get_currency() ); ?>
 		</select>
 	</p>
 	<?php
@@ -327,7 +320,7 @@ function mosw_ajax_set_currency() {
 		wp_send_json_error();
 	}
 
-	if ( ! array_key_exists( $currency, mosw_currencies( $order->get_currency() ) ) ) {
+	if ( ! array_key_exists( $currency, mosw_currencies() ) ) {
 		wp_send_json_error();
 	}
 
@@ -344,4 +337,75 @@ function mosw_ajax_set_currency() {
 	}
 
 	wp_send_json_success();
+}
+
+/**
+ * Orders for the "Copy products from" picker. Empty search: the latest 10.
+ */
+function mosw_ajax_search_orders() {
+	check_ajax_referer( 'mosw_admin', 'security' );
+
+	if ( ! current_user_can( 'edit_shop_orders' ) ) {
+		wp_die( -1 );
+	}
+
+	$term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
+
+	if ( '' === $term ) {
+		$orders = wc_get_orders(
+			array(
+				'type'    => 'shop_order',
+				'status'  => array_keys( wc_get_order_statuses() ),
+				'limit'   => 10,
+				'orderby' => 'date',
+				'order'   => 'DESC',
+			)
+		);
+	} else {
+		// Name, email, address, product names, and the order number itself.
+		$ids    = array_map( 'absint', wc_order_search( $term ) );
+		$number = ltrim( $term, '#' );
+		if ( ctype_digit( $number ) ) {
+			$ids[] = absint( $number );
+		}
+		$ids = array_unique( $ids );
+		rsort( $ids );
+
+		$orders = array();
+		foreach ( $ids as $id ) {
+			$order = wc_get_order( $id );
+			if ( $order && 'shop_order' === $order->get_type() && ! $order->has_status( array( 'auto-draft', 'checkout-draft', 'trash' ) ) ) {
+				$orders[] = $order;
+			}
+			if ( count( $orders ) >= 20 ) {
+				break;
+			}
+		}
+	}
+
+	$results = array();
+	foreach ( $orders as $order ) {
+		$name = trim( $order->get_formatted_billing_full_name() );
+		if ( ! $name ) {
+			$name = $order->get_billing_email() ? $order->get_billing_email() : __( 'Guest', 'manual-order-superpowers-for-woocommerce' );
+		}
+		$count = $order->get_item_count();
+
+		$results[] = array(
+			'id'   => $order->get_id(),
+			'text' => implode(
+				' · ',
+				array(
+					'#' . $order->get_order_number(),
+					$name,
+					/* translators: %d: number of items */
+					sprintf( _n( '%d item', '%d items', $count, 'manual-order-superpowers-for-woocommerce' ), $count ),
+					html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ),
+					$order->get_date_created() ? wc_format_datetime( $order->get_date_created() ) : '',
+				)
+			),
+		);
+	}
+
+	wp_send_json( array( 'results' => $results ) );
 }

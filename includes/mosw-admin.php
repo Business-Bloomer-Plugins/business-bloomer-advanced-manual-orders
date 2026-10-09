@@ -68,6 +68,10 @@ function mosw_enqueue() {
 				'error'         => __( 'Something went wrong. Please try again.', 'manual-order-superpowers-for-woocommerce' ),
 				'copyLink'      => __( 'Copy link', 'manual-order-superpowers-for-woocommerce' ),
 				'copied'        => __( 'Copied', 'manual-order-superpowers-for-woocommerce' ),
+				'addProduct'    => __( 'Add a product: best sellers first, or type a name or SKU', 'manual-order-superpowers-for-woocommerce' ),
+				'qty'           => __( 'Quantity', 'manual-order-superpowers-for-woocommerce' ),
+				'searching'     => __( 'Searching…', 'manual-order-superpowers-for-woocommerce' ),
+				'noResults'     => __( 'No products found', 'manual-order-superpowers-for-woocommerce' ),
 			),
 		)
 	);
@@ -77,7 +81,7 @@ function mosw_enqueue() {
  * The "Add order" form, shown by the script when the button is clicked.
  */
 function mosw_new_order_form() {
-	if ( 'list' !== mosw_screen() || ! mosw_enabled( 'popup' ) || ! current_user_can( 'edit_shop_orders' ) ) {
+	if ( ! mosw_screen() || ! mosw_enabled( 'popup' ) || ! current_user_can( 'edit_shop_orders' ) ) {
 		return;
 	}
 
@@ -96,21 +100,16 @@ function mosw_new_order_form() {
 					<span class="description"><?php esc_html_e( 'Their saved billing and shipping addresses are filled in.', 'manual-order-superpowers-for-woocommerce' ); ?></span>
 				</p>
 
-				<?php $currencies = mosw_currencies(); ?>
-				<?php if ( count( $currencies ) > 1 ) : ?>
-					<p>
-						<label for="mosw_new_currency"><?php esc_html_e( 'Currency', 'manual-order-superpowers-for-woocommerce' ); ?></label>
-						<select id="mosw_new_currency" name="mosw_currency" class="wc-enhanced-select" style="width:100%">
-							<?php foreach ( $currencies as $code => $name ) : ?>
-								<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $code, $store ); ?>><?php echo esc_html( $name . ' (' . get_woocommerce_currency_symbol( $code ) . ')' ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</p>
-				<?php endif; ?>
+				<p>
+					<label for="mosw_new_currency"><?php esc_html_e( 'Currency', 'manual-order-superpowers-for-woocommerce' ); ?></label>
+					<select id="mosw_new_currency" name="mosw_currency" class="wc-enhanced-select" style="width:100%">
+						<?php mosw_currency_options( get_option( 'woocommerce_currency' ) ); ?>
+					</select>
+				</p>
 
 				<p>
-					<label for="mosw_copy_from"><?php esc_html_e( 'Copy products from order (optional)', 'manual-order-superpowers-for-woocommerce' ); ?></label>
-					<input type="number" id="mosw_copy_from" name="mosw_copy_from" min="1" step="1" placeholder="<?php esc_attr_e( 'Order number', 'manual-order-superpowers-for-woocommerce' ); ?>">
+					<label for="mosw_copy_from"><?php esc_html_e( 'Copy products from an order (optional)', 'manual-order-superpowers-for-woocommerce' ); ?></label>
+					<select id="mosw_copy_from" name="mosw_copy_from" style="width:100%" data-placeholder="<?php esc_attr_e( 'Latest orders, or search by name, email or number', 'manual-order-superpowers-for-woocommerce' ); ?>"></select>
 					<span class="description"><?php esc_html_e( 'Same products and quantities, at today\'s prices.', 'manual-order-superpowers-for-woocommerce' ); ?></span>
 				</p>
 
