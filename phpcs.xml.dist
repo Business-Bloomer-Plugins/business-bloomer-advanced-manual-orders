@@ -9,6 +9,14 @@
 
 	<rule ref="WordPress-Extra"/>
 
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="amowc"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="WordPress.WP.Capabilities">
 		<properties>
 			<property name="custom_capabilities" type="array">

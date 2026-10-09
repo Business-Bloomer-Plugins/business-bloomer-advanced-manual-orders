@@ -59,7 +59,7 @@ If you set `woocommerce_adjust_non_base_location_prices` to false, WooCommerce 1
 
 = What does "Repeat the whole order" leave out? =
 
-Everything that belongs to the original's payment and processing: payment method, transaction ID, paid and completed dates, stock changes, order notes, and hidden data added by other plugins, such as invoice numbers, license keys and tracking numbers. Visible custom fields and line item details, like variation attributes, product options or an engraving text, are copied. Developers can change this with the `amo_copy_meta` filter.
+Everything that belongs to the original's payment and processing: payment method, transaction ID, paid and completed dates, stock changes, order notes, and hidden data added by other plugins, such as invoice numbers, license keys and tracking numbers. Visible custom fields and line item details, like variation attributes, product options or an engraving text, are copied. Developers can change this with the `amowc_copy_meta` filter.
 
 = Does it work with HPOS? =
 
@@ -67,7 +67,7 @@ Yes, with both order storage types.
 
 = My multi-currency plugin isn't listed. =
 
-Add its currencies in the settings and they show at the top of the list. Developers can use the `amo_store_currencies` filter.
+Add its currencies in the settings and they show at the top of the list. Developers can use the `amowc_store_currencies` filter.
 
 == Changelog ==
 

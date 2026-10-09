@@ -9,20 +9,20 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'woocommerce_order_item_add_action_buttons', 'amo_shipping_button' );
-add_action( 'wp_ajax_amo_shipping_rates', 'amo_ajax_shipping_rates' );
-add_action( 'wp_ajax_amo_add_shipping', 'amo_ajax_add_shipping' );
+add_action( 'woocommerce_order_item_add_action_buttons', 'amowc_shipping_button' );
+add_action( 'wp_ajax_amowc_shipping_rates', 'amowc_ajax_shipping_rates' );
+add_action( 'wp_ajax_amowc_add_shipping', 'amowc_ajax_add_shipping' );
 
 /**
  * "Calculate shipping" button next to "Recalculate", always in view.
  *
  * @param WC_Order $order Order.
  */
-function amo_shipping_button( $order ) {
+function amowc_shipping_button( $order ) {
 	if ( ! wc_shipping_enabled() || ! $order->is_editable() ) {
 		return;
 	}
-	echo '<button type="button" class="button amo-calc-shipping">' . esc_html__( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ) . '</button>';
+	echo '<button type="button" class="button amowc-calc-shipping">' . esc_html__( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ) . '</button>';
 }
 
 /**
@@ -32,7 +32,7 @@ function amo_shipping_button( $order ) {
  * @param array    $destination country, state, postcode, city, address_1, address_2.
  * @return WC_Shipping_Rate[][] Package index => rate ID => rate.
  */
-function amo_get_shipping_rates( $order, $destination ) {
+function amowc_get_shipping_rates( $order, $destination ) {
 	$wc    = WC();
 	$saved = array(
 		'cart'     => $wc->cart,
@@ -83,7 +83,7 @@ function amo_get_shipping_rates( $order, $destination ) {
 				}
 			}
 
-			$key              = $wc->cart->generate_cart_id( $item->get_product_id(), $item->get_variation_id(), $variation, array( 'amo_item' => $item_id ) );
+			$key              = $wc->cart->generate_cart_id( $item->get_product_id(), $item->get_variation_id(), $variation, array( 'amowc_item' => $item_id ) );
 			$contents[ $key ] = array(
 				'key'          => $key,
 				'product_id'   => $item->get_product_id(),
@@ -123,8 +123,8 @@ function amo_get_shipping_rates( $order, $destination ) {
  *
  * @return array Order and destination.
  */
-function amo_shipping_request() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_shipping_request() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 
@@ -147,12 +147,12 @@ function amo_shipping_request() {
 /**
  * Returns the available rates to the order screen.
  */
-function amo_ajax_shipping_rates() {
-	list( $order, $destination ) = amo_shipping_request();
+function amowc_ajax_shipping_rates() {
+	list( $order, $destination ) = amowc_shipping_request();
 
 	$packages = array();
 
-	foreach ( amo_get_shipping_rates( $order, $destination ) as $index => $rates ) {
+	foreach ( amowc_get_shipping_rates( $order, $destination ) as $index => $rates ) {
 		$list = array();
 		foreach ( $rates as $rate_id => $rate ) {
 			$list[] = array(
@@ -177,14 +177,14 @@ function amo_ajax_shipping_rates() {
 /**
  * Replaces the order's shipping lines with the chosen rates.
  */
-function amo_ajax_add_shipping() {
-	list( $order, $destination ) = amo_shipping_request();
+function amowc_ajax_add_shipping() {
+	list( $order, $destination ) = amowc_shipping_request();
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in amo_shipping_request().
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in amowc_shipping_request().
 	$chosen = isset( $_POST['rates'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['rates'] ) ) : array();
 	$added  = array();
 
-	foreach ( amo_get_shipping_rates( $order, $destination ) as $index => $rates ) {
+	foreach ( amowc_get_shipping_rates( $order, $destination ) as $index => $rates ) {
 		$rate_id = isset( $chosen[ $index ] ) ? $chosen[ $index ] : '';
 		if ( isset( $rates[ $rate_id ] ) ) {
 			$added[] = $rates[ $rate_id ];

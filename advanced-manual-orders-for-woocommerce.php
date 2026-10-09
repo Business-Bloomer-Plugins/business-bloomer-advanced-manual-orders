@@ -17,18 +17,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'AMO_VERSION', '1.0.0' );
-define( 'AMO_PLUGIN_FILE', __FILE__ );
-define( 'AMO_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'AMO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'AMOWC_VERSION', '1.0.0' );
+define( 'AMOWC_PLUGIN_FILE', __FILE__ );
+define( 'AMOWC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'AMOWC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-add_action( 'before_woocommerce_init', 'amo_declare_compatibility' );
-add_action( 'plugins_loaded', 'amo_init' );
+add_action( 'before_woocommerce_init', 'amowc_declare_compatibility' );
+add_action( 'plugins_loaded', 'amowc_init' );
 
 /**
  * Declares HPOS compatibility.
  */
-function amo_declare_compatibility() {
+function amowc_declare_compatibility() {
 	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 	}
@@ -37,20 +37,20 @@ function amo_declare_compatibility() {
 /**
  * Loads the plugin once WooCommerce is available.
  */
-function amo_init() {
+function amowc_init() {
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
 	}
 
-	require_once AMO_PLUGIN_DIR . 'includes/amo-settings.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-orders.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-admin.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-shipping.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-products.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-payment.php';
-	require_once AMO_PLUGIN_DIR . 'includes/amo-tax-fix.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-settings.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-orders.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-admin.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-shipping.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-products.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-payment.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-tax-fix.php';
 
-	add_filter( 'plugin_action_links_' . plugin_basename( AMO_PLUGIN_FILE ), 'amo_action_links' );
+	add_filter( 'plugin_action_links_' . plugin_basename( AMOWC_PLUGIN_FILE ), 'amowc_action_links' );
 }
 
 /**
@@ -59,7 +59,7 @@ function amo_init() {
  * @param array $links Plugin action links.
  * @return array
  */
-function amo_action_links( $links ) {
-	array_unshift( $links, '<a href="' . esc_url( amo_settings_url() ) . '">' . esc_html__( 'Settings', 'advanced-manual-orders-for-woocommerce' ) . '</a>' );
+function amowc_action_links( $links ) {
+	array_unshift( $links, '<a href="' . esc_url( amowc_settings_url() ) . '">' . esc_html__( 'Settings', 'advanced-manual-orders-for-woocommerce' ) . '</a>' );
 	return $links;
 }

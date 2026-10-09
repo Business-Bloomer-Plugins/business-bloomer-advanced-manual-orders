@@ -9,14 +9,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'woocommerce_ajax_add_order_item_meta', 'amo_same_price_on_add', 10, 3 );
+add_action( 'woocommerce_ajax_add_order_item_meta', 'amowc_same_price_on_add', 10, 3 );
 
 /**
  * True when this WooCommerce version needs the fix.
  *
  * @return bool
  */
-function amo_same_price_fix_needed() {
+function amowc_same_price_fix_needed() {
 	return version_compare( WC_VERSION, '11.3', '<' );
 }
 
@@ -25,9 +25,9 @@ function amo_same_price_fix_needed() {
  *
  * @return bool
  */
-function amo_same_price_fix_active() {
+function amowc_same_price_fix_active() {
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce's own filter.
-	return amo_same_price_fix_needed() && amo_enabled( 'same_price_fix' ) && wc_tax_enabled() && wc_prices_include_tax() && ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true );
+	return amowc_same_price_fix_needed() && amowc_enabled( 'same_price_fix' ) && wc_tax_enabled() && wc_prices_include_tax() && ! apply_filters( 'woocommerce_adjust_non_base_location_prices', true );
 }
 
 /**
@@ -36,7 +36,7 @@ function amo_same_price_fix_active() {
  * @param WC_Order $order Order.
  * @return array country, state, postcode, city.
  */
-function amo_tax_location( $order ) {
+function amowc_tax_location( $order ) {
 	$location = array();
 	foreach ( array( 'country', 'state', 'postcode', 'city' ) as $key ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- read during WooCommerce's own nonce-checked AJAX request.
@@ -56,7 +56,7 @@ function amo_tax_location( $order ) {
  * @param WC_Order_Item_Product $item     Line item.
  * @param array                 $location Tax address.
  */
-function amo_same_price_item( $item, $location ) {
+function amowc_same_price_item( $item, $location ) {
 	$product = $item->get_product();
 
 	if ( ! $product || ! $product->is_taxable() || empty( $location['country'] ) ) {
@@ -79,8 +79,8 @@ function amo_same_price_item( $item, $location ) {
  * @param WC_Order_Item_Product $item    Item.
  * @param WC_Order              $order   Order.
  */
-function amo_same_price_on_add( $item_id, $item, $order ) {
-	if ( $item instanceof WC_Order_Item_Product && amo_same_price_fix_active() ) {
-		amo_same_price_item( $item, amo_tax_location( $order ) );
+function amowc_same_price_on_add( $item_id, $item, $order ) {
+	if ( $item instanceof WC_Order_Item_Product && amowc_same_price_fix_active() ) {
+		amowc_same_price_item( $item, amowc_tax_location( $order ) );
 	}
 }

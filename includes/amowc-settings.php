@@ -5,16 +5,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_filter( 'woocommerce_get_sections_advanced', 'amo_add_section' );
-add_filter( 'woocommerce_get_settings_advanced', 'amo_section_settings', 10, 2 );
+add_filter( 'woocommerce_get_sections_advanced', 'amowc_add_section' );
+add_filter( 'woocommerce_get_settings_advanced', 'amowc_section_settings', 10, 2 );
 
 /**
  * Returns a setting, falling back to its default.
  *
- * @param string $key Setting name without the amo_ prefix.
+ * @param string $key Setting name without the amowc_ prefix.
  * @return mixed
  */
-function amo_get_option( $key ) {
+function amowc_get_option( $key ) {
 	$defaults = array(
 		'popup'          => 'yes',
 		'auto_totals'    => 'yes',
@@ -25,17 +25,17 @@ function amo_get_option( $key ) {
 		'same_price_fix' => 'yes',
 	);
 
-	return get_option( 'amo_' . $key, isset( $defaults[ $key ] ) ? $defaults[ $key ] : '' );
+	return get_option( 'amowc_' . $key, isset( $defaults[ $key ] ) ? $defaults[ $key ] : '' );
 }
 
 /**
  * True when a yes/no setting is on.
  *
- * @param string $key Setting name without the amo_ prefix.
+ * @param string $key Setting name without the amowc_ prefix.
  * @return bool
  */
-function amo_enabled( $key ) {
-	return 'yes' === amo_get_option( $key );
+function amowc_enabled( $key ) {
+	return 'yes' === amowc_get_option( $key );
 }
 
 /**
@@ -43,8 +43,8 @@ function amo_enabled( $key ) {
  *
  * @return string
  */
-function amo_settings_url() {
-	return admin_url( 'admin.php?page=wc-settings&tab=advanced&section=amo' );
+function amowc_settings_url() {
+	return admin_url( 'admin.php?page=wc-settings&tab=advanced&section=amowc' );
 }
 
 /**
@@ -53,8 +53,8 @@ function amo_settings_url() {
  * @param array $sections Advanced tab sections.
  * @return array
  */
-function amo_add_section( $sections ) {
-	$sections['amo'] = __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' );
+function amowc_add_section( $sections ) {
+	$sections['amowc'] = __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' );
 	return $sections;
 }
 
@@ -65,8 +65,8 @@ function amo_add_section( $sections ) {
  * @param string $section  Current section.
  * @return array
  */
-function amo_section_settings( $settings, $section ) {
-	if ( 'amo' !== $section ) {
+function amowc_section_settings( $settings, $section ) {
+	if ( 'amowc' !== $section ) {
 		return $settings;
 	}
 
@@ -75,43 +75,43 @@ function amo_section_settings( $settings, $section ) {
 			'title' => __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' ),
 			'type'  => 'title',
 			'desc'  => __( 'How orders you create in the admin behave.', 'advanced-manual-orders-for-woocommerce' ),
-			'id'    => 'amo_options',
+			'id'    => 'amowc_options',
 		),
 		array(
 			'title'   => __( 'New order form', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'    => __( 'Ask for customer, currency and products to copy when you click "Add order"', 'advanced-manual-orders-for-woocommerce' ),
-			'id'      => 'amo_popup',
+			'id'      => 'amowc_popup',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
 			'title'    => __( 'Duplicate order status', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'     => __( 'Status of the copy made by "Duplicate". No emails are sent for it. On hold, Processing and Completed reduce stock, as for any order.', 'advanced-manual-orders-for-woocommerce' ),
-			'id'       => 'amo_dup_status',
+			'id'       => 'amowc_dup_status',
 			'type'     => 'select',
 			'class'    => 'wc-enhanced-select',
-			'options'  => amo_duplicate_statuses(),
+			'options'  => amowc_duplicate_statuses(),
 			'default'  => 'pending',
 			'desc_tip' => true,
 		),
 		array(
 			'title'   => __( 'Taxes and totals', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'advanced-manual-orders-for-woocommerce' ),
-			'id'      => 'amo_auto_totals',
+			'id'      => 'amowc_auto_totals',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
 			'title'   => __( 'Currency selector', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'    => __( 'Pick a currency on the "Add order" form and on unpaid orders', 'advanced-manual-orders-for-woocommerce' ),
-			'id'      => 'amo_currency',
+			'id'      => 'amowc_currency',
 			'type'    => 'checkbox',
 			'default' => 'no',
 		),
 		array(
 			'title'    => __( 'Currencies', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'advanced-manual-orders-for-woocommerce' ),
-			'id'       => 'amo_currencies',
+			'id'       => 'amowc_currencies',
 			'type'     => 'multiselect',
 			'class'    => 'wc-enhanced-select',
 			'options'  => get_woocommerce_currencies(),
@@ -121,19 +121,19 @@ function amo_section_settings( $settings, $section ) {
 		array(
 			'title'    => __( 'Payment link', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'     => __( 'Customers can pay without logging in', 'advanced-manual-orders-for-woocommerce' ),
-			'id'       => 'amo_guest_pay',
+			'id'       => 'amowc_guest_pay',
 			'type'     => 'checkbox',
 			'default'  => 'yes',
 			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'advanced-manual-orders-for-woocommerce' ),
 		),
 		array(
 			'type' => 'sectionend',
-			'id'   => 'amo_options',
+			'id'   => 'amowc_options',
 		),
 	);
 
-	// Until WooCommerce 11.3, see amo-tax-fix.php.
-	if ( amo_same_price_fix_needed() ) {
+	// Until WooCommerce 11.3, see amowc-tax-fix.php.
+	if ( amowc_same_price_fix_needed() ) {
 		array_splice(
 			$fields,
 			-1,
@@ -142,7 +142,7 @@ function amo_section_settings( $settings, $section ) {
 				array(
 					'title'    => __( 'Same price in every country', 'advanced-manual-orders-for-woocommerce' ),
 					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'advanced-manual-orders-for-woocommerce' ),
-					'id'       => 'amo_same_price_fix',
+					'id'       => 'amowc_same_price_fix',
 					'type'     => 'checkbox',
 					'default'  => 'yes',
 					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'advanced-manual-orders-for-woocommerce' ),
@@ -151,7 +151,7 @@ function amo_section_settings( $settings, $section ) {
 		);
 	}
 
-	return apply_filters( 'amo_settings_fields', $fields );
+	return apply_filters( 'amowc_settings_fields', $fields );
 }
 
 /**
@@ -160,7 +160,7 @@ function amo_section_settings( $settings, $section ) {
  *
  * @return string[] Currency codes.
  */
-function amo_store_currencies() {
+function amowc_store_currencies() {
 	$codes = array( get_option( 'woocommerce_currency' ) );
 
 	// WooPayments.
@@ -223,10 +223,10 @@ function amo_store_currencies() {
 		}
 	}
 
-	$codes = array_merge( $codes, (array) amo_get_option( 'currencies' ) );
+	$codes = array_merge( $codes, (array) amowc_get_option( 'currencies' ) );
 	$codes = array_intersect( array_unique( array_filter( array_map( 'strval', $codes ) ) ), array_keys( get_woocommerce_currencies() ) );
 
-	return array_values( (array) apply_filters( 'amo_store_currencies', $codes ) );
+	return array_values( (array) apply_filters( 'amowc_store_currencies', $codes ) );
 }
 
 /**
@@ -234,10 +234,10 @@ function amo_store_currencies() {
  *
  * @return array
  */
-function amo_currencies() {
+function amowc_currencies() {
 	$all   = get_woocommerce_currencies();
 	$first = array();
-	foreach ( amo_store_currencies() as $code ) {
+	foreach ( amowc_store_currencies() as $code ) {
 		$first[ $code ] = $all[ $code ];
 	}
 
@@ -249,9 +249,9 @@ function amo_currencies() {
  *
  * @param string $selected Selected currency code.
  */
-function amo_currency_options( $selected ) {
-	$all    = amo_currencies();
-	$store  = array_intersect_key( $all, array_flip( amo_store_currencies() ) );
+function amowc_currency_options( $selected ) {
+	$all    = amowc_currencies();
+	$store  = array_intersect_key( $all, array_flip( amowc_store_currencies() ) );
 	$groups = array(
 		__( 'Store currencies', 'advanced-manual-orders-for-woocommerce' ) => $store,
 		__( 'All currencies', 'advanced-manual-orders-for-woocommerce' )   => array_diff_key( $all, $store ),
@@ -274,7 +274,7 @@ function amo_currency_options( $selected ) {
  *
  * @return array
  */
-function amo_duplicate_statuses() {
+function amowc_duplicate_statuses() {
 	$statuses = array();
 
 	foreach ( wc_get_order_statuses() as $key => $label ) {
@@ -292,7 +292,7 @@ function amo_duplicate_statuses() {
  *
  * @return string
  */
-function amo_duplicate_status() {
-	$status = amo_get_option( 'dup_status' );
-	return array_key_exists( $status, amo_duplicate_statuses() ) ? $status : 'pending';
+function amowc_duplicate_status() {
+	$status = amowc_get_option( 'dup_status' );
+	return array_key_exists( $status, amowc_duplicate_statuses() ) ? $status : 'pending';
 }

@@ -5,21 +5,21 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'admin_post_amo_new_order', 'amo_handle_new_order_form' );
-add_filter( 'woocommerce_order_actions', 'amo_order_actions', 10, 2 );
-add_action( 'woocommerce_order_action_amo_duplicate', 'amo_action_duplicate' );
-add_action( 'woocommerce_order_action_amo_same_customer', 'amo_action_same_customer' );
-add_action( 'woocommerce_order_action_amo_same_products', 'amo_action_same_products' );
-add_filter( 'redirect_post_location', 'amo_redirect_to_new_draft' );
-add_filter( 'woocommerce_redirect_order_location', 'amo_redirect_to_new_draft' );
-add_action( 'woocommerce_admin_order_data_after_order_details', 'amo_currency_field' );
-add_action( 'wp_ajax_amo_set_currency', 'amo_ajax_set_currency' );
-add_action( 'wp_ajax_amo_search_orders', 'amo_ajax_search_orders' );
-add_action( 'wp_ajax_amo_toggle_currency', 'amo_ajax_toggle_currency' );
-add_action( 'admin_post_amo_duplicate', 'amo_handle_duplicate_link' );
-add_filter( 'woocommerce_admin_order_actions', 'amo_list_duplicate_button', 10, 2 );
-add_filter( 'woocommerce_admin_order_preview_actions', 'amo_list_duplicate_button', 10, 2 );
-add_filter( 'default_hidden_columns', 'amo_show_actions_column', 20, 2 );
+add_action( 'admin_post_amowc_new_order', 'amowc_handle_new_order_form' );
+add_filter( 'woocommerce_order_actions', 'amowc_order_actions', 10, 2 );
+add_action( 'woocommerce_order_action_amowc_duplicate', 'amowc_action_duplicate' );
+add_action( 'woocommerce_order_action_amowc_same_customer', 'amowc_action_same_customer' );
+add_action( 'woocommerce_order_action_amowc_same_products', 'amowc_action_same_products' );
+add_filter( 'redirect_post_location', 'amowc_redirect_to_new_draft' );
+add_filter( 'woocommerce_redirect_order_location', 'amowc_redirect_to_new_draft' );
+add_action( 'woocommerce_admin_order_data_after_order_details', 'amowc_currency_field' );
+add_action( 'wp_ajax_amowc_set_currency', 'amowc_ajax_set_currency' );
+add_action( 'wp_ajax_amowc_search_orders', 'amowc_ajax_search_orders' );
+add_action( 'wp_ajax_amowc_toggle_currency', 'amowc_ajax_toggle_currency' );
+add_action( 'admin_post_amowc_duplicate', 'amowc_handle_duplicate_link' );
+add_filter( 'woocommerce_admin_order_actions', 'amowc_list_duplicate_button', 10, 2 );
+add_filter( 'woocommerce_admin_order_preview_actions', 'amowc_list_duplicate_button', 10, 2 );
+add_filter( 'default_hidden_columns', 'amowc_show_actions_column', 20, 2 );
 
 /**
  * Creates a new order. By default a draft, the same kind WooCommerce makes when you click
@@ -34,7 +34,7 @@ add_filter( 'default_hidden_columns', 'amo_show_actions_column', 20, 2 );
  * }
  * @return WC_Order
  */
-function amo_create_draft( $args ) {
+function amowc_create_draft( $args ) {
 	$args = wp_parse_args(
 		$args,
 		array(
@@ -65,7 +65,7 @@ function amo_create_draft( $args ) {
 		$order->set_address( $source->get_address( 'shipping' ), 'shipping' );
 		$order->set_currency( $source->get_currency() );
 	} elseif ( $args['customer_id'] ) {
-		amo_set_customer( $order, $args['customer_id'] );
+		amowc_set_customer( $order, $args['customer_id'] );
 	}
 
 	// What belongs to the original's payment and processing is never copied: payment method,
@@ -75,7 +75,7 @@ function amo_create_draft( $args ) {
 		$order->set_customer_note( $source->get_customer_note() );
 
 		foreach ( $source->get_meta_data() as $meta ) {
-			if ( amo_copy_meta( $meta->key, $source ) ) {
+			if ( amowc_copy_meta( $meta->key, $source ) ) {
 				$order->add_meta_data( $meta->key, $meta->value );
 			}
 		}
@@ -85,7 +85,7 @@ function amo_create_draft( $args ) {
 
 	if ( $source && in_array( $args['copy'], array( 'all', 'products' ), true ) ) {
 		$fresh = 'products' === $args['copy'];
-		amo_copy_items( $source, $order, $fresh );
+		amowc_copy_items( $source, $order, $fresh );
 
 		if ( $fresh ) {
 			$order->calculate_totals();
@@ -113,7 +113,7 @@ function amo_create_draft( $args ) {
 		}
 	}
 
-	do_action( 'amo_draft_created', $order, $args );
+	do_action( 'amowc_draft_created', $order, $args );
 
 	return $order;
 }
@@ -124,7 +124,7 @@ function amo_create_draft( $args ) {
  * @param WC_Order $order       Order.
  * @param int      $customer_id Customer user ID.
  */
-function amo_set_customer( $order, $customer_id ) {
+function amowc_set_customer( $order, $customer_id ) {
 	$customer = new WC_Customer( $customer_id );
 
 	if ( ! $customer->get_id() ) {
@@ -150,8 +150,8 @@ function amo_set_customer( $order, $customer_id ) {
  * @param WC_Order|WC_Order_Item $owner  Order or line item it belongs to.
  * @return bool
  */
-function amo_copy_meta( $key, $owner ) {
-	return (bool) apply_filters( 'amo_copy_meta', '_' !== substr( $key, 0, 1 ), $key, $owner );
+function amowc_copy_meta( $key, $owner ) {
+	return (bool) apply_filters( 'amowc_copy_meta', '_' !== substr( $key, 0, 1 ), $key, $owner );
 }
 
 /**
@@ -161,7 +161,7 @@ function amo_copy_meta( $key, $owner ) {
  * @param WC_Order $to    Target order.
  * @param bool     $fresh True: products only, at today's prices. False: every line as it was.
  */
-function amo_copy_items( $from, $to, $fresh ) {
+function amowc_copy_items( $from, $to, $fresh ) {
 	// Tax lines are rebuilt from the copied items.
 	$types = $fresh ? array( 'line_item' ) : array( 'line_item', 'fee', 'shipping', 'coupon' );
 
@@ -179,7 +179,7 @@ function amo_copy_items( $from, $to, $fresh ) {
 		$new->set_props( $data );
 
 		foreach ( $item->get_meta_data() as $meta ) {
-			if ( amo_copy_meta( $meta->key, $item ) ) {
+			if ( amowc_copy_meta( $meta->key, $item ) ) {
 				$new->add_meta_data( $meta->key, $meta->value );
 			}
 		}
@@ -199,8 +199,8 @@ function amo_copy_items( $from, $to, $fresh ) {
 
 		$to->add_item( $new );
 
-		if ( $fresh && $new instanceof WC_Order_Item_Product && amo_same_price_fix_active() ) {
-			amo_same_price_item( $new, amo_tax_location( $to ) );
+		if ( $fresh && $new instanceof WC_Order_Item_Product && amowc_same_price_fix_active() ) {
+			amowc_same_price_item( $new, amowc_tax_location( $to ) );
 		}
 	}
 
@@ -210,22 +210,22 @@ function amo_copy_items( $from, $to, $fresh ) {
 /**
  * Handles the "Add order" form.
  */
-function amo_handle_new_order_form() {
-	check_admin_referer( 'amo_new_order' );
+function amowc_handle_new_order_form() {
+	check_admin_referer( 'amowc_new_order' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
 		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
 	}
 
-	$currency = isset( $_POST['amo_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amo_currency'] ) ) : '';
-	$source   = ! empty( $_POST['amo_copy_from'] ) ? wc_get_order( absint( $_POST['amo_copy_from'] ) ) : null;
+	$currency = isset( $_POST['amowc_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amowc_currency'] ) ) : '';
+	$source   = ! empty( $_POST['amowc_copy_from'] ) ? wc_get_order( absint( $_POST['amowc_copy_from'] ) ) : null;
 
-	$order = amo_create_draft(
+	$order = amowc_create_draft(
 		array(
-			'customer_id' => isset( $_POST['amo_customer'] ) ? absint( $_POST['amo_customer'] ) : 0,
-			'currency'    => array_key_exists( $currency, amo_currencies() ) ? $currency : '',
+			'customer_id' => isset( $_POST['amowc_customer'] ) ? absint( $_POST['amowc_customer'] ) : 0,
+			'currency'    => array_key_exists( $currency, amowc_currencies() ) ? $currency : '',
 			'source'      => $source && 'shop_order' === $source->get_type() ? $source : null,
-			'copy'        => isset( $_POST['amo_copy'] ) && 'all' === sanitize_key( $_POST['amo_copy'] ) ? 'all' : 'products',
+			'copy'        => isset( $_POST['amowc_copy'] ) && 'all' === sanitize_key( $_POST['amowc_copy'] ) ? 'all' : 'products',
 		)
 	);
 
@@ -240,11 +240,11 @@ function amo_handle_new_order_form() {
  * @param WC_Order $order   Order being edited.
  * @return array
  */
-function amo_order_actions( $actions, $order = null ) {
+function amowc_order_actions( $actions, $order = null ) {
 	if ( $order && $order->get_id() && 'auto-draft' !== $order->get_status() ) {
-		$actions['amo_duplicate']     = __( 'Duplicate order', 'advanced-manual-orders-for-woocommerce' );
-		$actions['amo_same_customer'] = __( 'New order for this customer', 'advanced-manual-orders-for-woocommerce' );
-		$actions['amo_same_products'] = __( 'New order with these products', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amowc_duplicate']     = __( 'Duplicate order', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amowc_same_customer'] = __( 'New order for this customer', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amowc_same_products'] = __( 'New order with these products', 'advanced-manual-orders-for-woocommerce' );
 	}
 	return $actions;
 }
@@ -255,7 +255,7 @@ function amo_order_actions( $actions, $order = null ) {
  * @param WC_Order|null $order Draft, or null to read it.
  * @return WC_Order|null
  */
-function amo_new_draft( $order = null ) {
+function amowc_new_draft( $order = null ) {
 	static $draft = null;
 	if ( $order ) {
 		$draft = $order;
@@ -268,13 +268,13 @@ function amo_new_draft( $order = null ) {
  *
  * @param WC_Order $order Order.
  */
-function amo_action_duplicate( $order ) {
-	amo_new_draft(
-		amo_create_draft(
+function amowc_action_duplicate( $order ) {
+	amowc_new_draft(
+		amowc_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'all',
-				'status' => amo_duplicate_status(),
+				'status' => amowc_duplicate_status(),
 			)
 		)
 	);
@@ -285,9 +285,9 @@ function amo_action_duplicate( $order ) {
  *
  * @param WC_Order $order Order.
  */
-function amo_action_same_customer( $order ) {
-	amo_new_draft(
-		amo_create_draft(
+function amowc_action_same_customer( $order ) {
+	amowc_new_draft(
+		amowc_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'customer',
@@ -302,9 +302,9 @@ function amo_action_same_customer( $order ) {
  *
  * @param WC_Order $order Order.
  */
-function amo_action_same_products( $order ) {
-	amo_new_draft(
-		amo_create_draft(
+function amowc_action_same_products( $order ) {
+	amowc_new_draft(
+		amowc_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'products',
@@ -320,8 +320,8 @@ function amo_action_same_products( $order ) {
  * @param string $location Redirect URL.
  * @return string
  */
-function amo_redirect_to_new_draft( $location ) {
-	$draft = amo_new_draft();
+function amowc_redirect_to_new_draft( $location ) {
+	$draft = amowc_new_draft();
 	return $draft ? $draft->get_edit_order_url() : $location;
 }
 
@@ -330,14 +330,14 @@ function amo_redirect_to_new_draft( $location ) {
  *
  * @param WC_Order $order Order.
  */
-function amo_currency_field( $order ) {
+function amowc_currency_field( $order ) {
 	if ( ! $order->is_editable() || $order->get_date_paid() ) {
 		return;
 	}
 
 	?>
-	<div class="form-field form-field-wide amo-currency-wrap">
-		<?php amo_currency_selector( 'amo_currency', $order->get_currency() ); ?>
+	<div class="form-field form-field-wide amowc-currency-wrap">
+		<?php amowc_currency_selector( 'amowc_currency', $order->get_currency() ); ?>
 	</div>
 	<?php
 }
@@ -348,30 +348,30 @@ function amo_currency_field( $order ) {
  * @param string $id       Field ID and name.
  * @param string $selected Selected currency.
  */
-function amo_currency_selector( $id, $selected ) {
-	$on        = amo_enabled( 'currency' );
+function amowc_currency_selector( $id, $selected ) {
+	$on        = amowc_enabled( 'currency' );
 	$can_reset = current_user_can( 'manage_woocommerce' );
 
 	if ( ! $on && ! $can_reset ) {
 		return;
 	}
 	?>
-	<p class="amo-currency amo-advanced" <?php echo $on ? '' : 'hidden'; ?>>
+	<p class="amowc-currency amowc-advanced" <?php echo $on ? '' : 'hidden'; ?>>
 		<label for="<?php echo esc_attr( $id ); ?>">
 			<?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?>
-			<?php amo_help_tip( __( 'The currency of this order. Your store currencies come first. Prices you type are not converted.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
+			<?php amowc_help_tip( __( 'The currency of this order. Your store currencies come first. Prices you type are not converted.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
 			<?php if ( $can_reset ) : ?>
-				<a href="#" class="amo-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+				<a href="#" class="amowc-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
 			<?php endif; ?>
 		</label>
 		<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" class="wc-enhanced-select" style="width:100%">
-			<?php amo_currency_options( $selected ); ?>
+			<?php amowc_currency_options( $selected ); ?>
 		</select>
 	</p>
 	<?php if ( $can_reset ) : ?>
-		<p class="amo-currency-off" <?php echo $on ? 'hidden' : ''; ?>>
-			<a href="#" class="amo-currency-toggle amo-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
-			<?php amo_help_tip( __( 'Adds a currency dropdown to new and unpaid orders, so you can take an order in another currency. You can remove it again at any time.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
+		<p class="amowc-currency-off" <?php echo $on ? 'hidden' : ''; ?>>
+			<a href="#" class="amowc-currency-toggle amowc-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+			<?php amowc_help_tip( __( 'Adds a currency dropdown to new and unpaid orders, so you can take an order in another currency. You can remove it again at any time.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
 		</p>
 	<?php endif; ?>
 	<?php
@@ -382,29 +382,29 @@ function amo_currency_selector( $id, $selected ) {
  *
  * @param string $tip Tooltip text.
  */
-function amo_help_tip( $tip ) {
-	printf( '<span class="amo-help-tip" tabindex="0" data-tip="%1$s" aria-label="%1$s"></span>', esc_attr( $tip ) );
+function amowc_help_tip( $tip ) {
+	printf( '<span class="amowc-help-tip" tabindex="0" data-tip="%1$s" aria-label="%1$s"></span>', esc_attr( $tip ) );
 }
 
 /**
  * Turns the currency selector on or off from the order screen.
  */
-function amo_ajax_toggle_currency() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_ajax_toggle_currency() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	if ( ! current_user_can( 'manage_woocommerce' ) ) {
 		wp_send_json_error();
 	}
 
-	update_option( 'amo_currency', empty( $_POST['on'] ) ? 'no' : 'yes' );
+	update_option( 'amowc_currency', empty( $_POST['on'] ) ? 'no' : 'yes' );
 	wp_send_json_success();
 }
 
 /**
  * Saves the currency as soon as it changes, so items added next use it.
  */
-function amo_ajax_set_currency() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_ajax_set_currency() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	$order    = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 	$currency = isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : '';
@@ -413,7 +413,7 @@ function amo_ajax_set_currency() {
 		wp_send_json_error();
 	}
 
-	if ( ! array_key_exists( $currency, amo_currencies() ) ) {
+	if ( ! array_key_exists( $currency, amowc_currencies() ) ) {
 		wp_send_json_error();
 	}
 
@@ -435,8 +435,8 @@ function amo_ajax_set_currency() {
 /**
  * Orders for the "Copy products from" picker. Empty search: the latest 10.
  */
-function amo_ajax_search_orders() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_ajax_search_orders() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
 		wp_die( -1 );
@@ -510,17 +510,17 @@ function amo_ajax_search_orders() {
  * @param WC_Order $order   Order.
  * @return array
  */
-function amo_list_duplicate_button( $actions, $order ) {
+function amowc_list_duplicate_button( $actions, $order ) {
 	if ( $order instanceof WC_Order && 'shop_order' === $order->get_type() && current_user_can( 'edit_shop_orders' ) ) {
-		$actions['amo_duplicate'] = array(
-			'url'    => wp_nonce_url( admin_url( 'admin-post.php?action=amo_duplicate&order_id=' . $order->get_id() ), 'amo_duplicate_' . $order->get_id() ),
+		$actions['amowc_duplicate'] = array(
+			'url'    => wp_nonce_url( admin_url( 'admin-post.php?action=amowc_duplicate&order_id=' . $order->get_id() ), 'amowc_duplicate_' . $order->get_id() ),
 			'name'   => __( 'Duplicate', 'advanced-manual-orders-for-woocommerce' ),
 			'title'  => sprintf(
 				/* translators: %s: order status, e.g. Pending payment */
 				__( 'Duplicate this order: a new "%s" order with the same customer, items, shipping and coupons. Payment details and invoices are not copied, and no emails are sent.', 'advanced-manual-orders-for-woocommerce' ),
-				wc_get_order_status_name( amo_duplicate_status() )
+				wc_get_order_status_name( amowc_duplicate_status() )
 			),
-			'action' => 'amo-duplicate',
+			'action' => 'amowc-duplicate',
 		);
 	}
 	return $actions;
@@ -529,10 +529,10 @@ function amo_list_duplicate_button( $actions, $order ) {
 /**
  * Duplicate button clicked in the orders list or the preview.
  */
-function amo_handle_duplicate_link() {
+function amowc_handle_duplicate_link() {
 	$order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
 
-	check_admin_referer( 'amo_duplicate_' . $order_id );
+	check_admin_referer( 'amowc_duplicate_' . $order_id );
 
 	$order = wc_get_order( $order_id );
 
@@ -540,11 +540,11 @@ function amo_handle_duplicate_link() {
 		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
 	}
 
-	$copy = amo_create_draft(
+	$copy = amowc_create_draft(
 		array(
 			'source' => $order,
 			'copy'   => 'all',
-			'status' => amo_duplicate_status(),
+			'status' => amowc_duplicate_status(),
 		)
 	);
 
@@ -560,7 +560,7 @@ function amo_handle_duplicate_link() {
  * @param WP_Screen $screen Screen.
  * @return string[]
  */
-function amo_show_actions_column( $hidden, $screen ) {
+function amowc_show_actions_column( $hidden, $screen ) {
 	if ( isset( $screen->id ) && in_array( $screen->id, array( 'edit-shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
 		$hidden = array_values( array_diff( $hidden, array( 'wc_actions' ) ) );
 	}

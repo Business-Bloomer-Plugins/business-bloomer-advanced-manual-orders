@@ -1,8 +1,8 @@
-/* global jQuery, amo, woocommerce_admin_meta_boxes */
+/* global jQuery, amowc, woocommerce_admin_meta_boxes */
 jQuery( function ( $ ) {
 	'use strict';
 
-	var i18n = amo.i18n;
+	var i18n = amowc.i18n;
 
 	/* ---------- Simple modal ---------- */
 
@@ -15,11 +15,11 @@ jQuery( function ( $ ) {
 		$modal.prop( 'hidden', true );
 	}
 
-	$( document ).on( 'click', '.amo-modal .amo-close', function () {
-		closeModal( $( this ).closest( '.amo-modal' ) );
+	$( document ).on( 'click', '.amowc-modal .amowc-close', function () {
+		closeModal( $( this ).closest( '.amowc-modal' ) );
 	} );
 
-	$( document ).on( 'click', '.amo-modal', function ( e ) {
+	$( document ).on( 'click', '.amowc-modal', function ( e ) {
 		if ( e.target === this ) {
 			closeModal( $( this ) );
 		}
@@ -28,7 +28,7 @@ jQuery( function ( $ ) {
 	$( document ).on( 'keydown', function ( e ) {
 		// Escape in an open dropdown only closes the dropdown.
 		if ( 'Escape' === e.key && ! $( '.select2-container--open' ).length ) {
-			closeModal( $( '.amo-modal:not([hidden])' ) );
+			closeModal( $( '.amowc-modal:not([hidden])' ) );
 		}
 	} );
 
@@ -39,16 +39,16 @@ jQuery( function ( $ ) {
 		if ( ! $.fn.tipTip ) {
 			return;
 		}
-		$context.find( 'a.wc-action-button-amo-duplicate[title]' ).each( function () {
+		$context.find( 'a.wc-action-button-amowc-duplicate[title]' ).each( function () {
 			$( this ).attr( 'data-tip', $( this ).attr( 'title' ) ).removeAttr( 'title' );
 		} );
-		$context.find( '.amo-help-tip, a.wc-action-button-amo-duplicate' ).not( '.amo-tipped' ).addClass( 'amo-tipped' )
+		$context.find( '.amowc-help-tip, a.wc-action-button-amowc-duplicate' ).not( '.amowc-tipped' ).addClass( 'amowc-tipped' )
 			.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
 	}
 
-	$( document ).on( 'focus', '.amo-help-tip', function () {
+	$( document ).on( 'focus', '.amowc-help-tip', function () {
 		$( this ).trigger( 'mouseenter' );
-	} ).on( 'blur', '.amo-help-tip', function () {
+	} ).on( 'blur', '.amowc-help-tip', function () {
 		$( this ).trigger( 'mouseleave' );
 	} );
 
@@ -56,20 +56,20 @@ jQuery( function ( $ ) {
 
 	/* ---------- "Add order" form, on the orders list and the order screen ---------- */
 
-	var $form = $( '#amo-new-order' );
+	var $form = $( '#amowc-new-order' );
 
-	if ( amo.popup && $form.length ) {
-		$form.find( '#amo_copy_from' ).selectWoo( {
+	if ( amowc.popup && $form.length ) {
+		$form.find( '#amowc_copy_from' ).selectWoo( {
 			width: '100%',
 			allowClear: true,
-			placeholder: $form.find( '#amo_copy_from' ).data( 'placeholder' ),
+			placeholder: $form.find( '#amowc_copy_from' ).data( 'placeholder' ),
 			minimumInputLength: 0,
 			ajax: {
-				url: amo.ajaxUrl,
+				url: amowc.ajaxUrl,
 				dataType: 'json',
 				delay: 250,
 				data: function ( params ) {
-					return { action: 'amo_search_orders', security: amo.nonce, term: params.term || '' };
+					return { action: 'amowc_search_orders', security: amowc.nonce, term: params.term || '' };
 				},
 				processResults: function ( data ) {
 					return data;
@@ -79,12 +79,12 @@ jQuery( function ( $ ) {
 
 		// A past order picked: repeat it all, or copy its products for the customer below.
 		function copyMode() {
-			var picked = !! $form.find( '#amo_copy_from' ).val();
-			var all = picked && 'all' === $form.find( 'input[name="amo_copy"]:checked' ).val();
-			$form.find( '.amo-copy' ).prop( 'hidden', ! picked );
-			$form.find( '.amo-new-fields' ).prop( 'hidden', all );
+			var picked = !! $form.find( '#amowc_copy_from' ).val();
+			var all = picked && 'all' === $form.find( 'input[name="amowc_copy"]:checked' ).val();
+			$form.find( '.amowc-copy' ).prop( 'hidden', ! picked );
+			$form.find( '.amowc-new-fields' ).prop( 'hidden', all );
 		}
-		$form.on( 'change', '#amo_copy_from, input[name="amo_copy"]', copyMode );
+		$form.on( 'change', '#amowc_copy_from, input[name="amowc_copy"]', copyMode );
 
 		$( document ).on( 'click', 'a.page-title-action', function ( e ) {
 			var href = $( this ).attr( 'href' ) || '';
@@ -92,7 +92,7 @@ jQuery( function ( $ ) {
 				return;
 			}
 			e.preventDefault();
-			$form.find( '.amo-skip' ).attr( 'href', href );
+			$form.find( '.amowc-skip' ).attr( 'href', href );
 			openModal( $form );
 		} );
 	}
@@ -104,29 +104,29 @@ jQuery( function ( $ ) {
 			return;
 		}
 		var $footer = $( '.wc-order-preview footer' );
-		$footer.find( '.wc-backbone-modal-buttons' ).prepend( $footer.find( '> .inner > .wc-action-button-amo-duplicate' ) );
+		$footer.find( '.wc-backbone-modal-buttons' ).prepend( $footer.find( '> .inner > .wc-action-button-amowc-duplicate' ) );
 		helpTips( $footer );
 	} );
 
 	/* ---------- Currency selector on/off, same setting everywhere ---------- */
 
-	$( document ).on( 'click', '.amo-currency-toggle', function ( e ) {
+	$( document ).on( 'click', '.amowc-currency-toggle', function ( e ) {
 		var on = '1' === String( $( this ).data( 'on' ) );
 		e.preventDefault();
 
-		$.post( amo.ajaxUrl, { action: 'amo_toggle_currency', security: amo.nonce, on: on ? 1 : 0 } ).done( function ( res ) {
+		$.post( amowc.ajaxUrl, { action: 'amowc_toggle_currency', security: amowc.nonce, on: on ? 1 : 0 } ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
 				window.alert( i18n.error );
 				return;
 			}
-			$( '.amo-currency' ).prop( 'hidden', ! on );
-			$( '.amo-currency-off' ).prop( 'hidden', on );
+			$( '.amowc-currency' ).prop( 'hidden', ! on );
+			$( '.amowc-currency-off' ).prop( 'hidden', on );
 		} ).fail( function () {
 			window.alert( i18n.error );
 		} );
 	} );
 
-	if ( 'edit' !== amo.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
+	if ( 'edit' !== amowc.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
 		return;
 	}
 
@@ -172,7 +172,7 @@ jQuery( function ( $ ) {
 
 	// Products added to the order are priced for the address on screen, even before it's saved.
 	$.ajaxPrefilter( function ( options ) {
-		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|amo_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
+		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|amowc_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
 			options.data += '&' + $.param( taxableAddress() );
 		}
 	} );
@@ -203,18 +203,18 @@ jQuery( function ( $ ) {
 	}
 
 	// Core requests after which totals are stale.
-	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|amo_add_shipping|amo_add_product)(&|$)/;
+	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|amowc_add_shipping|amowc_add_product)(&|$)/;
 
 	$( document ).ajaxComplete( function ( e, xhr, settings ) {
 		if ( ! xhr || 200 !== xhr.status || 'string' !== typeof settings.data || ! stale.test( settings.data ) ) {
 			return;
 		}
-		if ( amo.autoTotals || /action=amo_add_shipping/.test( settings.data ) ) {
+		if ( amowc.autoTotals || /action=amowc_add_shipping/.test( settings.data ) ) {
 			recalculate();
 		}
 	} );
 
-	if ( amo.autoTotals ) {
+	if ( amowc.autoTotals ) {
 		var timer;
 		$( '#order_data' ).on( 'change', '[id^="_billing_"], [id^="_shipping_"]', function () {
 			if ( ! /_(country|state|postcode|city)$/.test( this.id ) || ! $items.find( 'tr.item' ).length ) {
@@ -231,12 +231,12 @@ jQuery( function ( $ ) {
 		var $inside = $items.find( '.inside' );
 		var $row = $inside.find( '.woocommerce_order_items_wrapper' );
 
-		if ( ! $row.length || $inside.find( '.amo-quick-add' ).length || ! $inside.find( 'button.add-line-item' ).length ) {
+		if ( ! $row.length || $inside.find( '.amowc-quick-add' ).length || ! $inside.find( 'button.add-line-item' ).length ) {
 			return;
 		}
 
-		var $box = $( '<div class="wc-order-data-row amo-quick-add"><select class="amo-product-search"></select><span class="amo-help-tip" tabindex="0"></span></div>' );
-		$box.find( '.amo-help-tip' ).attr( { 'data-tip': i18n.tipProduct, 'aria-label': i18n.tipProduct } );
+		var $box = $( '<div class="wc-order-data-row amowc-quick-add"><select class="amowc-product-search"></select><span class="amowc-help-tip" tabindex="0"></span></div>' );
+		$box.find( '.amowc-help-tip' ).attr( { 'data-tip': i18n.tipProduct, 'aria-label': i18n.tipProduct } );
 		$row.before( $box );
 		helpTips( $box );
 
@@ -254,12 +254,12 @@ jQuery( function ( $ ) {
 				}
 			},
 			ajax: {
-				url: amo.ajaxUrl,
+				url: amowc.ajaxUrl,
 				dataType: 'json',
 				delay: 250,
 				cache: true,
 				data: function ( params ) {
-					return { action: 'amo_search_products', security: amo.nonce, term: params.term || '', page: params.page || 1 };
+					return { action: 'amowc_search_products', security: amowc.nonce, term: params.term || '', page: params.page || 1 };
 				},
 				processResults: function ( data ) {
 					return data;
@@ -269,8 +269,8 @@ jQuery( function ( $ ) {
 
 		$select.on( 'select2:select', function ( e ) {
 			var data = {
-				action: 'amo_add_product',
-				security: amo.nonce,
+				action: 'amowc_add_product',
+				security: amowc.nonce,
 				order_id: orderId,
 				product_id: e.params.data.id
 			};
@@ -281,7 +281,7 @@ jQuery( function ( $ ) {
 			}
 
 			block();
-			$.post( amo.ajaxUrl, data ).done( function ( res ) {
+			$.post( amowc.ajaxUrl, data ).done( function ( res ) {
 				if ( ! res || ! res.success ) {
 					window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
 					return;
@@ -289,7 +289,7 @@ jQuery( function ( $ ) {
 				$items.find( '.inside' ).empty().append( res.data.html );
 				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.data.notes_html );
 				$items.trigger( 'wc_order_items_reloaded' );
-				$items.find( '.amo-product-search' ).selectWoo( 'focus' );
+				$items.find( '.amowc-product-search' ).selectWoo( 'focus' );
 			} ).fail( function () {
 				window.alert( i18n.error );
 			} ).always( unblock );
@@ -301,9 +301,9 @@ jQuery( function ( $ ) {
 	var tipCount = 0;
 
 	// Keyboard users see the tip on focus too.
-	$items.on( 'focus', '.amo-tip', function () {
+	$items.on( 'focus', '.amowc-tip', function () {
 		$( this ).trigger( 'mouseenter' );
-	} ).on( 'blur', '.amo-tip', function () {
+	} ).on( 'blur', '.amowc-tip', function () {
 		$( this ).trigger( 'mouseleave' );
 	} );
 
@@ -311,27 +311,27 @@ jQuery( function ( $ ) {
 		var $inside = $items.find( '.inside' );
 		var list = [
 			[ 'button.add-line-item, button.add-order-item', i18n.tipAddItems, true ],
-			[ 'button.calculate-action', i18n.tipRecalc, amo.autoTotals ],
-			[ 'button.add-order-shipping', i18n.tipShipping, amo.shipping ],
-			[ 'button.add-coupon', i18n.tipCoupon, amo.autoTotals ],
+			[ 'button.calculate-action', i18n.tipRecalc, amowc.autoTotals ],
+			[ 'button.add-order-shipping', i18n.tipShipping, amowc.shipping ],
+			[ 'button.add-coupon', i18n.tipCoupon, amowc.autoTotals ],
 			[ 'button.add-order-fee', i18n.tipFee, true ],
 			[ 'button.add-order-tax', i18n.tipTax, true ],
-			[ 'button.amo-calc-shipping', i18n.tipCalcShip, true ]
+			[ 'button.amowc-calc-shipping', i18n.tipCalcShip, true ]
 		];
 
 		$.each( list, function ( n, tip ) {
 			if ( tip[ 2 ] ) {
-				$inside.find( tip[ 0 ] ).not( '.amo-tip' ).each( function () {
+				$inside.find( tip[ 0 ] ).not( '.amowc-tip' ).each( function () {
 					// Screen readers get the tip as the button's description.
-					var id = 'amo-tip-' + ( ++tipCount );
-					$( this ).addClass( 'amo-tip' ).attr( { 'data-tip': tip[ 1 ], 'aria-describedby': id } )
+					var id = 'amowc-tip-' + ( ++tipCount );
+					$( this ).addClass( 'amowc-tip' ).attr( { 'data-tip': tip[ 1 ], 'aria-describedby': id } )
 						.after( $( '<span class="screen-reader-text"></span>' ).attr( 'id', id ).text( tip[ 1 ] ) );
 				} );
 			}
 		} );
 
 		if ( $.fn.tipTip ) {
-			$inside.find( '.amo-tip' ).tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200, keepAlive: true } );
+			$inside.find( '.amowc-tip' ).tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200, keepAlive: true } );
 		}
 	}
 
@@ -349,19 +349,19 @@ jQuery( function ( $ ) {
 	/* ---------- "Choose an action": point out the plugin's entries ---------- */
 
 	var $actions = $( 'select[name="wc_order_action"]' );
-	if ( $actions.find( 'option[value^="amo_"]' ).length ) {
-		var $help = $( '<span class="amo-help-tip" tabindex="0"></span>' ).attr( { 'data-tip': i18n.tipActions, 'aria-label': i18n.tipActions } );
+	if ( $actions.find( 'option[value^="amowc_"]' ).length ) {
+		var $help = $( '<span class="amowc-help-tip" tabindex="0"></span>' ).attr( { 'data-tip': i18n.tipActions, 'aria-label': i18n.tipActions } );
 		$actions.siblings( 'button.wc-reload' ).after( $help );
 		helpTips( $help.parent() );
 	}
 
 	/* ---------- Currency ---------- */
 
-	$( '#order_data' ).on( 'change', '#amo_currency', function () {
+	$( '#order_data' ).on( 'change', '#amowc_currency', function () {
 		block();
-		$.post( amo.ajaxUrl, {
-			action: 'amo_set_currency',
-			security: amo.nonce,
+		$.post( amowc.ajaxUrl, {
+			action: 'amowc_set_currency',
+			security: amowc.nonce,
 			order_id: orderId,
 			currency: $( this ).val()
 		} ).done( function ( res ) {
@@ -374,18 +374,18 @@ jQuery( function ( $ ) {
 
 	/* ---------- Shipping rates ---------- */
 
-	var $ship = $( '<div class="amo-modal" hidden><div class="amo-modal__box" role="dialog" aria-modal="true"><h2></h2><div class="amo-rates"></div><p class="description"></p><div class="amo-modal__actions"><button type="button" class="button amo-close"></button><button type="button" class="button button-primary amo-add-shipping"></button></div></div></div>' );
+	var $ship = $( '<div class="amowc-modal" hidden><div class="amowc-modal__box" role="dialog" aria-modal="true"><h2></h2><div class="amowc-rates"></div><p class="description"></p><div class="amowc-modal__actions"><button type="button" class="button amowc-close"></button><button type="button" class="button button-primary amowc-add-shipping"></button></div></div></div>' );
 	$ship.find( 'h2' ).text( i18n.shippingTitle );
 	$ship.find( '.description' ).text( i18n.replaceNote );
-	$ship.find( '.amo-close' ).text( i18n.cancel );
-	$ship.find( '.amo-add-shipping' ).text( i18n.add );
+	$ship.find( '.amowc-close' ).text( i18n.cancel );
+	$ship.find( '.amowc-add-shipping' ).text( i18n.add );
 	$( 'body' ).append( $ship );
 
-	$items.on( 'click', 'button.amo-calc-shipping', function () {
+	$items.on( 'click', 'button.amowc-calc-shipping', function () {
 		block();
-		$.post( amo.ajaxUrl, $.extend( {}, shippingAddress(), {
-			action: 'amo_shipping_rates',
-			security: amo.nonce,
+		$.post( amowc.ajaxUrl, $.extend( {}, shippingAddress(), {
+			action: 'amowc_shipping_rates',
+			security: amowc.nonce,
 			order_id: orderId
 		} ) ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
@@ -393,7 +393,7 @@ jQuery( function ( $ ) {
 				return;
 			}
 
-			var $rates = $ship.find( '.amo-rates' ).empty();
+			var $rates = $ship.find( '.amowc-rates' ).empty();
 			var many = res.data.packages.length > 1;
 
 			$.each( res.data.packages, function ( n, pkg ) {
@@ -403,9 +403,9 @@ jQuery( function ( $ ) {
 				}
 				$.each( pkg.rates, function ( r, rate ) {
 					var $label = $( '<label></label>' );
-					$label.append( $( '<input type="radio">' ).attr( { name: 'amo_rate_' + pkg.index, value: rate.id } ).prop( 'checked', 0 === r ) );
-					$label.append( $( '<span class="amo-rate-label"></span>' ).text( rate.label ) );
-					$label.append( $( '<span class="amo-rate-cost"></span>' ).text( rate.cost ) );
+					$label.append( $( '<input type="radio">' ).attr( { name: 'amowc_rate_' + pkg.index, value: rate.id } ).prop( 'checked', 0 === r ) );
+					$label.append( $( '<span class="amowc-rate-label"></span>' ).text( rate.label ) );
+					$label.append( $( '<span class="amowc-rate-cost"></span>' ).text( rate.cost ) );
 					$set.append( $label );
 				} );
 				$rates.append( $set );
@@ -417,10 +417,10 @@ jQuery( function ( $ ) {
 		} ).always( unblock );
 	} );
 
-	$ship.on( 'click', '.amo-add-shipping', function () {
+	$ship.on( 'click', '.amowc-add-shipping', function () {
 		var data = $.extend( {}, shippingAddress(), {
-			action: 'amo_add_shipping',
-			security: amo.nonce,
+			action: 'amowc_add_shipping',
+			security: amowc.nonce,
 			order_id: orderId
 		} );
 
@@ -432,7 +432,7 @@ jQuery( function ( $ ) {
 		block();
 
 		// Totals refresh through the ajaxComplete handler above.
-		$.post( amo.ajaxUrl, data ).done( function ( res ) {
+		$.post( amowc.ajaxUrl, data ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
 				window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
 			}
@@ -443,7 +443,7 @@ jQuery( function ( $ ) {
 
 	var $payLink = $( '.wc-order-status label a[href*="pay_for_order"]' );
 	if ( $payLink.length && navigator.clipboard ) {
-		var $copy = $( '<button type="button" class="button-link amo-link amo-copy-link"></button>' ).text( i18n.copyLink );
+		var $copy = $( '<button type="button" class="button-link amowc-link amowc-copy-link"></button>' ).text( i18n.copyLink );
 		$payLink.closest( '.wc-order-status' ).append( $copy );
 		$copy.on( 'click', function ( e ) {
 			e.preventDefault();

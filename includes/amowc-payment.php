@@ -5,9 +5,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_filter( 'user_has_cap', 'amo_allow_pay_with_link', 20, 3 );
-add_filter( 'woocommerce_order_email_verification_required', 'amo_skip_email_verification', 20, 3 );
-add_action( 'wp', 'amo_pay_page_currency', 1 );
+add_filter( 'user_has_cap', 'amowc_allow_pay_with_link', 20, 3 );
+add_filter( 'woocommerce_order_email_verification_required', 'amowc_skip_email_verification', 20, 3 );
+add_action( 'wp', 'amowc_pay_page_currency', 1 );
 
 /**
  * The admin-created order whose valid payment link is being opened, if any.
@@ -15,11 +15,11 @@ add_action( 'wp', 'amo_pay_page_currency', 1 );
  * @param int $order_id Order ID to check.
  * @return WC_Order|null
  */
-function amo_order_from_pay_link( $order_id ) {
+function amowc_order_from_pay_link( $order_id ) {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the order key is the proof.
 	$key = isset( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : '';
 
-	if ( ! $key || ! $order_id || ! amo_enabled( 'guest_pay' ) ) {
+	if ( ! $key || ! $order_id || ! amowc_enabled( 'guest_pay' ) ) {
 		return null;
 	}
 
@@ -41,8 +41,8 @@ function amo_order_from_pay_link( $order_id ) {
  * @param array $args    [0] capability, [1] user ID, [2] order ID.
  * @return array
  */
-function amo_allow_pay_with_link( $allcaps, $caps, $args ) {
-	if ( isset( $args[0], $args[2] ) && 'pay_for_order' === $args[0] && amo_order_from_pay_link( absint( $args[2] ) ) ) {
+function amowc_allow_pay_with_link( $allcaps, $caps, $args ) {
+	if ( isset( $args[0], $args[2] ) && 'pay_for_order' === $args[0] && amowc_order_from_pay_link( absint( $args[2] ) ) ) {
 		$allcaps['pay_for_order'] = true;
 	}
 	return $allcaps;
@@ -56,8 +56,8 @@ function amo_allow_pay_with_link( $allcaps, $caps, $args ) {
  * @param string   $context  Where the check happens.
  * @return bool
  */
-function amo_skip_email_verification( $required, $order, $context = '' ) {
-	if ( $required && 'order-pay' === $context && $order && amo_order_from_pay_link( $order->get_id() ) ) {
+function amowc_skip_email_verification( $required, $order, $context = '' ) {
+	if ( $required && 'order-pay' === $context && $order && amowc_order_from_pay_link( $order->get_id() ) ) {
 		return false;
 	}
 	return $required;
@@ -67,7 +67,7 @@ function amo_skip_email_verification( $required, $order, $context = '' ) {
  * On the pay page of an order in another currency, the store runs in that currency,
  * so payment methods check and charge the right one.
  */
-function amo_pay_page_currency() {
+function amowc_pay_page_currency() {
 	$order_id = absint( get_query_var( 'order-pay' ) );
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the order key is the proof.

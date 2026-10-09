@@ -1,11 +1,11 @@
 /* Everything this plugin adds carries the same accent, so it's easy to spot. */
 :root {
-	--amo-accent: #6d28d9;
-	--amo-accent-hover: #5b21b6;
-	--amo-accent-soft: #f5f3ff;
+	--amowc-accent: #6d28d9;
+	--amowc-accent-hover: #5b21b6;
+	--amowc-accent-soft: #f5f3ff;
 }
 
-.amo-modal {
+.amowc-modal {
 	position: fixed;
 	inset: 0;
 	z-index: 100000;
@@ -16,11 +16,11 @@
 	background: rgba(0, 0, 0, 0.6);
 }
 
-.amo-modal[hidden] {
+.amowc-modal[hidden] {
 	display: none;
 }
 
-.amo-modal__box {
+.amowc-modal__box {
 	width: 100%;
 	max-width: 520px;
 	max-height: 90vh;
@@ -31,30 +31,30 @@
 	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
-.amo-modal__box h2 {
+.amowc-modal__box h2 {
 	margin-top: 0;
 }
 
-.amo-modal__box p {
+.amowc-modal__box p {
 	margin: 0 0 16px;
 }
 
-.amo-modal__box label {
+.amowc-modal__box label {
 	display: block;
 	margin-bottom: 4px;
 	font-weight: 600;
 }
 
-.amo-modal__box input[type="number"] {
+.amowc-modal__box input[type="number"] {
 	width: 100%;
 }
 
-.amo-modal__box .description {
+.amowc-modal__box .description {
 	display: block;
 	margin-top: 4px;
 }
 
-.amo-modal__actions {
+.amowc-modal__actions {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
@@ -62,20 +62,20 @@
 	margin-top: 24px;
 }
 
-.amo-modal__actions .amo-skip {
+.amowc-modal__actions .amowc-skip {
 	margin-right: auto;
 }
 
-.amo-rates fieldset {
+.amowc-rates fieldset {
 	margin-bottom: 16px;
 }
 
-.amo-rates legend {
+.amowc-rates legend {
 	margin-bottom: 8px;
 	font-weight: 600;
 }
 
-.amo-rates label {
+.amowc-rates label {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -84,11 +84,11 @@
 	border-bottom: 1px solid #f0f0f1;
 }
 
-.amo-rates input[type="radio"] {
+.amowc-rates input[type="radio"] {
 	margin: 0;
 }
 
-.amo-rate-cost {
+.amowc-rate-cost {
 	margin-left: auto;
 	font-weight: 600;
 }
@@ -100,21 +100,21 @@
 
 
 
-.amo-copy {
+.amowc-copy {
 	margin: -8px 0 16px;
 }
 
-.amo-copy[hidden],
-.amo-new-fields[hidden] {
+.amowc-copy[hidden],
+.amowc-new-fields[hidden] {
 	display: none;
 }
 
-.amo-modal__box .amo-copy label {
+.amowc-modal__box .amowc-copy label {
 	margin: 8px 0 0;
 	font-weight: 400;
 }
 
-.amo-copy .description {
+.amowc-copy .description {
 	margin: 2px 0 0 24px;
 }
 
@@ -123,205 +123,205 @@
 }
 
 /* Fields and buttons added by the plugin. */
-.amo-advanced > label::before,
-.amo-quick-add::before,
-.amo-calc-shipping::before,
-.amo-link::before {
+.amowc-advanced > label::before,
+.amowc-quick-add::before,
+.amowc-calc-shipping::before,
+.amowc-link::before {
 	font-family: dashicons;
 	content: "\f311";
 	margin-right: 4px;
-	color: var(--amo-accent);
+	color: var(--amowc-accent);
 	vertical-align: -2px;
 }
 
-.amo-currency.amo-advanced,
-.amo-currency-off {
+.amowc-currency.amowc-advanced,
+.amowc-currency-off {
 	padding: 8px 10px;
-	background: var(--amo-accent-soft);
-	border-left: 3px solid var(--amo-accent);
+	background: var(--amowc-accent-soft);
+	border-left: 3px solid var(--amowc-accent);
 }
 
-#order_data .order_data_column .amo-currency-wrap p {
+#order_data .order_data_column .amowc-currency-wrap p {
 	margin: 9px 0 0;
 	padding: 8px 10px !important; /* WooCommerce zeroes padding in this column. */
 }
 
-.amo-currency label {
+.amowc-currency label {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 }
 
-.amo-currency .amo-currency-toggle {
+.amowc-currency .amowc-currency-toggle {
 	margin-left: auto;
 	font-weight: 400;
 	font-size: 12px;
 }
 
 /* Inline-block keeps the link underline off the icon. */
-.amo-link::before {
+.amowc-link::before {
 	display: inline-block;
 	text-decoration: none;
 }
 
-.amo-link,
-.amo-currency-toggle {
-	color: var(--amo-accent);
+.amowc-link,
+.amowc-currency-toggle {
+	color: var(--amowc-accent);
 	font-weight: 600;
 }
 
-.amo-link:hover,
-.amo-link:focus,
-.amo-currency-toggle:hover,
-.amo-currency-toggle:focus,
-#order_data .wc-order-status .amo-copy-link:hover,
-#order_data .wc-order-status .amo-copy-link:focus {
-	color: var(--amo-accent-hover);
+.amowc-link:hover,
+.amowc-link:focus,
+.amowc-currency-toggle:hover,
+.amowc-currency-toggle:focus,
+#order_data .wc-order-status .amowc-copy-link:hover,
+#order_data .wc-order-status .amowc-copy-link:focus {
+	color: var(--amowc-accent-hover);
 	text-decoration-thickness: 2px;
 }
 
-.amo-link:focus-visible,
-.amo-currency-toggle:focus-visible {
-	outline: 2px solid var(--amo-accent);
+.amowc-link:focus-visible,
+.amowc-currency-toggle:focus-visible {
+	outline: 2px solid var(--amowc-accent);
 	outline-offset: 2px;
 	box-shadow: none;
 }
 
 /* WooCommerce buttons that got a tip from the plugin: info icon after the label. */
-.amo-help-tip::after,
-#woocommerce-order-items .button.amo-tip::after {
+.amowc-help-tip::after,
+#woocommerce-order-items .button.amowc-tip::after {
 	font-family: dashicons;
 	content: "\f14c";
 	margin-left: 4px;
 	font-size: 16px;
 	line-height: 1;
 	vertical-align: -3px;
-	color: var(--amo-accent);
+	color: var(--amowc-accent);
 }
 
-.amo-help-tip {
+.amowc-help-tip {
 	display: inline-block;
 	cursor: help;
 }
 
-.amo-help-tip::after {
+.amowc-help-tip::after {
 	margin-left: 0;
 }
 
 /* On blue primary buttons the icon is white. */
-#woocommerce-order-items .button-primary.amo-tip::after {
+#woocommerce-order-items .button-primary.amowc-tip::after {
 	color: #fff;
 }
 
-.amo-currency-off {
+.amowc-currency-off {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 }
 
-.amo-currency[hidden],
-.amo-currency-off[hidden] {
+.amowc-currency[hidden],
+.amowc-currency-off[hidden] {
 	display: none !important;
 }
 
 /* Our entries in the "Choose an action" list. */
-select[name="wc_order_action"] option[value^="amo_"] {
-	color: var(--amo-accent);
+select[name="wc_order_action"] option[value^="amowc_"] {
+	color: var(--amowc-accent);
 	font-weight: 600;
 }
 
-#actions .amo-help-tip {
+#actions .amowc-help-tip {
 	margin-left: 2px;
 	vertical-align: middle;
 }
 
-#woocommerce-order-items .amo-quick-add {
+#woocommerce-order-items .amowc-quick-add {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	padding: 12px;
 	text-align: left;
-	background: var(--amo-accent-soft);
-	border-left: 3px solid var(--amo-accent);
+	background: var(--amowc-accent-soft);
+	border-left: 3px solid var(--amowc-accent);
 }
 
-#woocommerce-order-items .amo-quick-add::before {
+#woocommerce-order-items .amowc-quick-add::before {
 	font-size: 20px;
 	margin: 0;
 }
 
-.amo-quick-add .select2-container {
+.amowc-quick-add .select2-container {
 	flex: 1;
 	min-width: 0;
 }
 
-.amo-quick-add .amo-help-tip::after {
+.amowc-quick-add .amowc-help-tip::after {
 	font-size: 20px;
 	vertical-align: middle;
 }
 
-.amo-quick-add .select2-selection--single {
+.amowc-quick-add .select2-selection--single {
 	height: 40px;
-	border: 1px solid var(--amo-accent) !important;
+	border: 1px solid var(--amowc-accent) !important;
 	box-shadow: none !important;
 }
 
-.amo-quick-add .select2-selection--single .select2-selection__rendered {
+.amowc-quick-add .select2-selection--single .select2-selection__rendered {
 	text-align: left;
 	line-height: 38px;
 	font-weight: 600;
 }
 
-.amo-quick-add .select2-selection--single .select2-selection__arrow {
+.amowc-quick-add .select2-selection--single .select2-selection__arrow {
 	height: 38px;
 }
 
-#woocommerce-order-items .button.amo-calc-shipping {
-	color: var(--amo-accent);
-	border-color: var(--amo-accent);
+#woocommerce-order-items .button.amowc-calc-shipping {
+	color: var(--amowc-accent);
+	border-color: var(--amowc-accent);
 }
 
-#woocommerce-order-items .button.amo-calc-shipping:hover {
-	color: var(--amo-accent-hover);
-	border-color: var(--amo-accent-hover);
-	background: var(--amo-accent-soft);
+#woocommerce-order-items .button.amowc-calc-shipping:hover {
+	color: var(--amowc-accent-hover);
+	border-color: var(--amowc-accent-hover);
+	background: var(--amowc-accent-soft);
 }
 
 /* Same look as the other plugin links, right-aligned under the status. */
-#order_data .wc-order-status .amo-copy-link {
+#order_data .wc-order-status .amowc-copy-link {
 	display: block;
 	margin: 6px 0 0 auto;
 	font: inherit;
 	font-weight: 600;
-	color: var(--amo-accent);
+	color: var(--amowc-accent);
 	text-decoration: underline;
 }
 
 
-#order_data .wc-order-status .amo-copy-link::before {
+#order_data .wc-order-status .amowc-copy-link::before {
 	content: "\f105";
 }
 
 /* Duplicate button in the orders list and the preview. */
-.wc-action-button-amo-duplicate::after {
+.wc-action-button-amowc-duplicate::after {
 	font-family: dashicons !important;
 	content: "\f105" !important;
-	color: var(--amo-accent);
+	color: var(--amowc-accent);
 }
 
-.wc-order-preview .wc-action-button-amo-duplicate::after {
+.wc-order-preview .wc-action-button-amowc-duplicate::after {
 	content: none !important;
 }
 
-.wc-order-preview .wc-action-button-amo-duplicate {
+.wc-order-preview .wc-action-button-amowc-duplicate {
 	display: inline-block !important;
 	margin: 0 8px 0 0 !important;
-	color: var(--amo-accent);
-	border-color: var(--amo-accent);
+	color: var(--amowc-accent);
+	border-color: var(--amowc-accent);
 }
 
 /* Inline icon, so the button keeps WooCommerce's own size and alignment. */
-.wc-order-preview .wc-action-button-amo-duplicate::before {
+.wc-order-preview .wc-action-button-amowc-duplicate::before {
 	font-family: dashicons;
 	content: "\f105";
 	font-size: 16px;
@@ -330,7 +330,7 @@ select[name="wc_order_action"] option[value^="amo_"] {
 	vertical-align: -3px;
 }
 
-.amo-badge {
+.amowc-badge {
 	display: inline-block;
 	margin-left: 8px;
 	padding: 2px 8px;
@@ -341,6 +341,6 @@ select[name="wc_order_action"] option[value^="amo_"] {
 	letter-spacing: 0.04em;
 	vertical-align: middle;
 	color: #fff;
-	background: var(--amo-accent);
+	background: var(--amowc-accent);
 	border-radius: 10px;
 }

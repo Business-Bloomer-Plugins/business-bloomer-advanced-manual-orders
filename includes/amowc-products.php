@@ -6,8 +6,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'wp_ajax_amo_search_products', 'amo_ajax_search_products' );
-add_action( 'wp_ajax_amo_add_product', 'amo_ajax_add_product' );
+add_action( 'wp_ajax_amowc_search_products', 'amowc_ajax_search_products' );
+add_action( 'wp_ajax_amowc_add_product', 'amowc_ajax_add_product' );
 
 /**
  * One line of the product list: name or attributes, price, SKU, stock.
@@ -17,7 +17,7 @@ add_action( 'wp_ajax_amo_add_product', 'amo_ajax_add_product' );
  * @param array      $chosen    Values picked for the variation's "Any" attributes.
  * @return string
  */
-function amo_product_label( $product, $variation = false, $chosen = array() ) {
+function amowc_product_label( $product, $variation = false, $chosen = array() ) {
 	$parts = array();
 
 	if ( $variation ) {
@@ -68,8 +68,8 @@ function amo_product_label( $product, $variation = false, $chosen = array() ) {
  * @param WC_Product_Variable  $variable  Its variable product.
  * @return array[] Lists of attribute name => value. One empty list when nothing is "Any".
  */
-function amo_any_combinations( $variation, $variable ) {
-	$options = amo_attribute_options( $variable );
+function amowc_any_combinations( $variation, $variable ) {
+	$options = amowc_attribute_options( $variable );
 	$combos  = array( array() );
 
 	foreach ( $variation->get_variation_attributes( false ) as $name => $value ) {
@@ -84,7 +84,7 @@ function amo_any_combinations( $variation, $variable ) {
 		}
 		$combos = $next;
 
-		if ( count( $combos ) > (int) apply_filters( 'amo_max_any_combinations', 30 ) ) {
+		if ( count( $combos ) > (int) apply_filters( 'amowc_max_any_combinations', 30 ) ) {
 			return array( array() );
 		}
 	}
@@ -98,7 +98,7 @@ function amo_any_combinations( $variation, $variable ) {
  * @param WC_Product $variable Variable product.
  * @return array Attribute key => options.
  */
-function amo_attribute_options( $variable ) {
+function amowc_attribute_options( $variable ) {
 	$options = array();
 	foreach ( $variable->get_variation_attributes() as $name => $values ) {
 		$options[ sanitize_title( $name ) ] = array_values( $values );
@@ -113,12 +113,12 @@ function amo_attribute_options( $variable ) {
  * @param string     $query   name=value pairs.
  * @return array Attribute name => value.
  */
-function amo_parse_any_values( $product, $query ) {
+function amowc_parse_any_values( $product, $query ) {
 	$values = array();
 	parse_str( $query, $values );
 
 	$parent  = wc_get_product( $product->get_parent_id() );
-	$options = $parent ? amo_attribute_options( $parent ) : array();
+	$options = $parent ? amowc_attribute_options( $parent ) : array();
 	$chosen  = array();
 
 	foreach ( $product->get_variation_attributes( false ) as $name => $value ) {
@@ -134,8 +134,8 @@ function amo_parse_any_values( $product, $query ) {
  * Product list for the "Add a product" box. Empty search: best sellers.
  * Variable products come as a group with one entry per variation.
  */
-function amo_ajax_search_products() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_ajax_search_products() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
 		wp_die( -1 );
@@ -143,7 +143,7 @@ function amo_ajax_search_products() {
 
 	$term     = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
 	$page     = isset( $_GET['page'] ) ? max( 1, absint( $_GET['page'] ) ) : 1;
-	$per_page = (int) apply_filters( 'amo_products_per_page', 20 );
+	$per_page = (int) apply_filters( 'amowc_products_per_page', 20 );
 
 	// Grouped and external products can't go on an order.
 	$types = array_values( array_diff( array_keys( wc_get_product_types() ), array( 'grouped', 'external' ) ) );
@@ -218,7 +218,7 @@ function amo_ajax_search_products() {
 		if ( ! $product->is_type( 'variable' ) ) {
 			$results[] = array(
 				'id'   => $product->get_id(),
-				'text' => amo_product_label( $product ),
+				'text' => amowc_product_label( $product ),
 			);
 			continue;
 		}
@@ -233,10 +233,10 @@ function amo_ajax_search_products() {
 			if ( ! $child ) {
 				continue;
 			}
-			foreach ( amo_any_combinations( $child, $product ) as $chosen ) {
+			foreach ( amowc_any_combinations( $child, $product ) as $chosen ) {
 				$children[] = array(
 					'id'   => $chosen ? $child->get_id() . '|' . http_build_query( $chosen ) : $child->get_id(),
-					'text' => amo_product_label( $child, true, $chosen ),
+					'text' => amowc_product_label( $child, true, $chosen ),
 				);
 			}
 		}
@@ -260,14 +260,14 @@ function amo_ajax_search_products() {
 /**
  * Adds a product to the order. When it's already there, the quantity goes up instead.
  */
-function amo_ajax_add_product() {
-	check_ajax_referer( 'amo_admin', 'security' );
+function amowc_ajax_add_product() {
+	check_ajax_referer( 'amowc_admin', 'security' );
 
 	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 	// "123" or, for a variation with "Any" attributes, "123|color=red".
 	$picked  = isset( $_POST['product_id'] ) ? explode( '|', sanitize_text_field( wp_unslash( $_POST['product_id'] ) ), 2 ) : array( 0 );
 	$product = wc_get_product( absint( $picked[0] ) );
-	$chosen  = $product && isset( $picked[1] ) ? amo_parse_any_values( $product, $picked[1] ) : array();
+	$chosen  = $product && isset( $picked[1] ) ? amowc_parse_any_values( $product, $picked[1] ) : array();
 
 	if ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) {
 		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'advanced-manual-orders-for-woocommerce' ) ) );
@@ -292,7 +292,7 @@ function amo_ajax_add_product() {
 		$order = wc_get_order( $order->get_id() );
 	}
 
-	$validation = apply_filters( 'woocommerce_ajax_add_order_item_validation', new WP_Error(), $product, $order, $qty );
+	$validation = apply_filters( 'woocommerce_ajax_add_order_item_validation', new WP_Error(), $product, $order, $qty ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	if ( $validation->get_error_code() ) {
 		wp_send_json_error( array( 'message' => $validation->get_error_message() ) );
 	}
@@ -330,17 +330,17 @@ function amo_ajax_add_product() {
 			$args['variation'] = array_merge( $product->get_attributes(), $chosen );
 		}
 		$item_id = $order->add_product( $product, $qty, $args );
-		$item    = apply_filters( 'woocommerce_ajax_order_item', $order->get_item( $item_id ), $item_id, $order, $product );
+		$item    = apply_filters( 'woocommerce_ajax_order_item', $order->get_item( $item_id ), $item_id, $order, $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 
-		do_action( 'woocommerce_ajax_add_order_item_meta', $item_id, $item, $order );
+		do_action( 'woocommerce_ajax_add_order_item_meta', $item_id, $item, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 
 		/* translators: %s: product name */
 		$order->add_order_note( sprintf( __( 'Added line items: %s', 'advanced-manual-orders-for-woocommerce' ), $product->get_formatted_name() ), false, true );
 
-		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order );
+		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	}
 
-	wp_send_json_success( amo_order_items_html( $order->get_id() ) );
+	wp_send_json_success( amowc_order_items_html( $order->get_id() ) );
 }
 
 /**
@@ -349,7 +349,7 @@ function amo_ajax_add_product() {
  * @param int $order_id Order ID.
  * @return array html, notes_html.
  */
-function amo_order_items_html( $order_id ) {
+function amowc_order_items_html( $order_id ) {
 	$order = wc_get_order( $order_id );
 
 	ob_start();
