@@ -1,0 +1,98 @@
+.mosw-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.mosw-modal[hidden] {
+	display: none;
+}
+
+.mosw-modal__box {
+	width: 100%;
+	max-width: 520px;
+	max-height: 90vh;
+	overflow: auto;
+	padding: 24px;
+	background: #fff;
+	border-radius: 4px;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.mosw-modal__box h2 {
+	margin-top: 0;
+}
+
+.mosw-modal__box p {
+	margin: 0 0 16px;
+}
+
+.mosw-modal__box label {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 600;
+}
+
+.mosw-modal__box input[type="number"] {
+	width: 100%;
+}
+
+.mosw-modal__box .description {
+	display: block;
+	margin-top: 4px;
+}
+
+.mosw-modal__actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 24px;
+}
+
+.mosw-modal__actions .mosw-skip {
+	margin-right: auto;
+}
+
+.mosw-rates fieldset {
+	margin-bottom: 16px;
+}
+
+.mosw-rates legend {
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+
+.mosw-rates label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	font-weight: 400;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.mosw-rates input[type="radio"] {
+	margin: 0;
+}
+
+.mosw-rate-cost {
+	margin-left: auto;
+	font-weight: 600;
+}
+
+/* Above the selectWoo dropdowns of the order screen. */
+.select2-container--open .select2-dropdown {
+	z-index: 100001;
+}
+
+.wc-order-status .mosw-copy-link {
+	float: right;
+	margin-right: 8px;
+	font-weight: 400;
+}
