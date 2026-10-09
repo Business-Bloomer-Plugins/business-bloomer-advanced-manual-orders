@@ -162,6 +162,12 @@
 	font-size: 12px;
 }
 
+/* Inline-block keeps the link underline off the icon. */
+.amo-link::before {
+	display: inline-block;
+	text-decoration: none;
+}
+
 .amo-link,
 .amo-currency-toggle {
 	color: var(--amo-accent);
