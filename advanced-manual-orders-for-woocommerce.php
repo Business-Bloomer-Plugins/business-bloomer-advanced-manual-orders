@@ -2,12 +2,12 @@
 /**
  * Plugin Name:          Advanced Manual Orders for WooCommerce
  * Description:          Create manual orders in WooCommerce without the pain: pick a currency, get real shipping rates, taxes that recalculate on their own, one-click duplicate and reorder, and payment links that work without login.
- * Version:              0.1.0
+ * Version:              1.0.0
  * Requires at least:    6.5
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
  * WC requires at least: 8.0
- * WC tested up to:      11.1.2
+ * WC tested up to:      11.2
  * Author:               Rodolfo Melogli
  * Author URI:           https://businessbloomer.com/
  * License:              GPL v2 or later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'AMO_VERSION', '0.1.0' );
+define( 'AMO_VERSION', '1.0.0' );
 define( 'AMO_PLUGIN_FILE', __FILE__ );
 define( 'AMO_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AMO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
