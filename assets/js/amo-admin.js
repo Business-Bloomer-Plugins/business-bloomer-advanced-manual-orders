@@ -235,8 +235,10 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		var $box = $( '<div class="wc-order-data-row amo-quick-add"><select class="amo-product-search"></select></div>' );
+		var $box = $( '<div class="wc-order-data-row amo-quick-add"><select class="amo-product-search"></select><span class="amo-help-tip" tabindex="0"></span></div>' );
+		$box.find( '.amo-help-tip' ).attr( { 'data-tip': i18n.tipProduct, 'aria-label': i18n.tipProduct } );
 		$row.before( $box );
+		helpTips( $box );
 
 		var $select = $box.find( 'select' );
 		$select.attr( 'aria-label', i18n.addProduct ).selectWoo( {

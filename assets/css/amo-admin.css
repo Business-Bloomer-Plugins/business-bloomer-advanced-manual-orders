@@ -255,6 +255,11 @@ select[name="wc_order_action"] option[value^="amo_"] {
 	min-width: 0;
 }
 
+.amo-quick-add .amo-help-tip::after {
+	font-size: 20px;
+	vertical-align: middle;
+}
+
 .amo-quick-add .select2-selection--single {
 	height: 40px;
 	border: 1px solid var(--amo-accent) !important;
