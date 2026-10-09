@@ -58,6 +58,7 @@ function amo_enqueue() {
 			'nonce'      => wp_create_nonce( 'amo_admin' ),
 			'popup'      => amo_enabled( 'popup' ),
 			'autoTotals' => amo_enabled( 'auto_totals' ),
+			'shipping'   => wc_shipping_enabled(),
 			'i18n'       => array(
 				'shippingTitle' => __( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ),
 				/* translators: %d: package number */
@@ -71,6 +72,11 @@ function amo_enqueue() {
 				'addProduct'    => __( 'Add a product: type a name or SKU', 'advanced-manual-orders-for-woocommerce' ),
 				'searching'     => __( 'Searching…', 'advanced-manual-orders-for-woocommerce' ),
 				'noResults'     => __( 'No products found', 'advanced-manual-orders-for-woocommerce' ),
+				'tipAddItems'   => __( 'Tip: the "Add a product" box above adds products in one click, every variation listed.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipRecalc'     => __( 'Taxes and totals already update on their own when items or the address change.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipShipping'   => __( 'Tip: "Calculate shipping" adds real rates from your shipping zones, with tax.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipCalcShip'   => __( 'Real rates from your shipping zones for these items and this address, the same ones checkout shows.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipCoupon'     => __( 'Totals and taxes update on their own after the coupon is applied.', 'advanced-manual-orders-for-woocommerce' ),
 			),
 		)
 	);
@@ -89,7 +95,7 @@ function amo_new_order_form() {
 	<div id="amo-new-order" class="amo-modal" hidden>
 		<div class="amo-modal__box" role="dialog" aria-modal="true" aria-labelledby="amo-new-order-title">
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<h2 id="amo-new-order-title"><?php esc_html_e( 'New order', 'advanced-manual-orders-for-woocommerce' ); ?></h2>
+				<h2 id="amo-new-order-title"><?php esc_html_e( 'New order', 'advanced-manual-orders-for-woocommerce' ); ?> <span class="amo-badge"><?php esc_html_e( 'Advanced', 'advanced-manual-orders-for-woocommerce' ); ?></span></h2>
 				<input type="hidden" name="action" value="amo_new_order">
 				<?php wp_nonce_field( 'amo_new_order' ); ?>
 
@@ -112,12 +118,7 @@ function amo_new_order_form() {
 						<span class="description"><?php esc_html_e( 'Their saved billing and shipping addresses are filled in.', 'advanced-manual-orders-for-woocommerce' ); ?></span>
 					</p>
 
-					<p>
-						<label for="amo_new_currency"><?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-						<select id="amo_new_currency" name="amo_currency" class="wc-enhanced-select" style="width:100%">
-							<?php amo_currency_options( get_option( 'woocommerce_currency' ) ); ?>
-						</select>
-					</p>
+					<?php amo_currency_selector( 'amo_new_currency', get_woocommerce_currency() ); ?>
 				</div>
 
 				<div class="amo-modal__actions">

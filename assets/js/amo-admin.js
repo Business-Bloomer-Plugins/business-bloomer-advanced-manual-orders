@@ -75,6 +75,24 @@ jQuery( function ( $ ) {
 		} );
 	}
 
+	/* ---------- Currency selector on/off, same setting everywhere ---------- */
+
+	$( document ).on( 'click', '.amo-currency-toggle', function ( e ) {
+		var on = '1' === String( $( this ).data( 'on' ) );
+		e.preventDefault();
+
+		$.post( amo.ajaxUrl, { action: 'amo_toggle_currency', security: amo.nonce, on: on ? 1 : 0 } ).done( function ( res ) {
+			if ( ! res || ! res.success ) {
+				window.alert( i18n.error );
+				return;
+			}
+			$( '.amo-currency' ).prop( 'hidden', ! on );
+			$( '.amo-currency-off' ).prop( 'hidden', on );
+		} ).fail( function () {
+			window.alert( i18n.error );
+		} );
+	} );
+
 	if ( 'edit' !== amo.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
 		return;
 	}
@@ -243,10 +261,38 @@ jQuery( function ( $ ) {
 		} );
 	}
 
-	// The items box is re-rendered after every change, so put the box back each time.
-	quickAdd();
+	/* ---------- Tooltips on WooCommerce's own buttons ---------- */
+
+	function tips() {
+		var $inside = $items.find( '.inside' );
+		var list = [
+			[ 'button.add-line-item, button.add-order-item', i18n.tipAddItems, true ],
+			[ 'button.calculate-action', i18n.tipRecalc, amo.autoTotals ],
+			[ 'button.add-order-shipping', i18n.tipShipping, amo.shipping ],
+			[ 'button.add-coupon', i18n.tipCoupon, amo.autoTotals ],
+			[ 'button.amo-calc-shipping', i18n.tipCalcShip, true ]
+		];
+
+		$.each( list, function ( n, tip ) {
+			if ( tip[ 2 ] ) {
+				$inside.find( tip[ 0 ] ).not( '.amo-tip' ).addClass( 'amo-tip' ).attr( 'data-tip', tip[ 1 ] );
+			}
+		} );
+
+		if ( $.fn.tipTip ) {
+			$inside.find( '.amo-tip' ).tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200, keepAlive: true } );
+		}
+	}
+
+	// The items box is re-rendered after every change, so put the box and the tips back each time.
+	function decorate() {
+		quickAdd();
+		tips();
+	}
+
+	decorate();
 	if ( $items.length && window.MutationObserver ) {
-		new MutationObserver( quickAdd ).observe( $items.find( '.inside' )[ 0 ], { childList: true } );
+		new MutationObserver( decorate ).observe( $items.find( '.inside' )[ 0 ], { childList: true } );
 	}
 
 	/* ---------- Currency ---------- */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Settings: WooCommerce > Settings > Advanced > Manual orders.
+ * Settings: WooCommerce > Settings > Advanced > Advanced Manual Orders.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -19,7 +19,7 @@ function amo_get_option( $key ) {
 		'popup'          => 'yes',
 		'auto_totals'    => 'yes',
 		'guest_pay'      => 'yes',
-		'email_on_new'   => 'no',
+		'currency'       => 'no',
 		'currencies'     => array(),
 		'same_price_fix' => 'yes',
 	);
@@ -47,13 +47,13 @@ function amo_settings_url() {
 }
 
 /**
- * Adds the "Manual orders" section.
+ * Adds the "Advanced Manual Orders" section.
  *
  * @param array $sections Advanced tab sections.
  * @return array
  */
 function amo_add_section( $sections ) {
-	$sections['amo'] = __( 'Manual orders', 'advanced-manual-orders-for-woocommerce' );
+	$sections['amo'] = __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' );
 	return $sections;
 }
 
@@ -71,7 +71,7 @@ function amo_section_settings( $settings, $section ) {
 
 	$fields = array(
 		array(
-			'title' => __( 'Manual orders', 'advanced-manual-orders-for-woocommerce' ),
+			'title' => __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' ),
 			'type'  => 'title',
 			'desc'  => __( 'How orders you create in the admin behave.', 'advanced-manual-orders-for-woocommerce' ),
 			'id'    => 'amo_options',
@@ -91,6 +91,13 @@ function amo_section_settings( $settings, $section ) {
 			'default' => 'yes',
 		),
 		array(
+			'title'   => __( 'Currency selector', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'    => __( 'Pick a currency on the "Add order" form and on unpaid orders', 'advanced-manual-orders-for-woocommerce' ),
+			'id'      => 'amo_currency',
+			'type'    => 'checkbox',
+			'default' => 'no',
+		),
+		array(
 			'title'    => __( 'Currencies', 'advanced-manual-orders-for-woocommerce' ),
 			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'advanced-manual-orders-for-woocommerce' ),
 			'id'       => 'amo_currencies',
@@ -107,12 +114,6 @@ function amo_section_settings( $settings, $section ) {
 			'type'     => 'checkbox',
 			'default'  => 'yes',
 			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'advanced-manual-orders-for-woocommerce' ),
-		),
-		array(
-			'desc'    => __( 'Email the payment link to the customer when you create a pending order', 'advanced-manual-orders-for-woocommerce' ),
-			'id'      => 'amo_email_on_new',
-			'type'    => 'checkbox',
-			'default' => 'no',
 		),
 		array(
 			'type' => 'sectionend',

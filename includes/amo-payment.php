@@ -1,6 +1,6 @@
 <?php
 /**
- * Payment link: pay without login, the order's currency on the pay page, email on create.
+ * Payment link: pay without login, the order's currency on the pay page.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -8,7 +8,6 @@ defined( 'ABSPATH' ) || exit;
 add_filter( 'user_has_cap', 'amo_allow_pay_with_link', 20, 3 );
 add_filter( 'woocommerce_order_email_verification_required', 'amo_skip_email_verification', 20, 3 );
 add_action( 'wp', 'amo_pay_page_currency', 1 );
-add_action( 'woocommerce_process_shop_order_meta', 'amo_email_payment_link', 100 );
 
 /**
  * The admin-created order whose valid payment link is being opened, if any.
@@ -91,27 +90,4 @@ function amo_pay_page_currency() {
 			return $currency;
 		}
 	);
-}
-
-/**
- * Emails the payment link once, the first time a pending admin order with items is saved.
- *
- * @param int $order_id Order ID.
- */
-function amo_email_payment_link( $order_id ) {
-	if ( ! amo_enabled( 'email_on_new' ) ) {
-		return;
-	}
-
-	$order = wc_get_order( $order_id );
-
-	if ( ! $order || 'admin' !== $order->get_created_via() || ! $order->has_status( 'pending' ) || ! $order->get_billing_email() || ! $order->get_items() || $order->get_meta( '_amo_link_emailed' ) ) {
-		return;
-	}
-
-	WC()->mailer()->customer_invoice( $order );
-
-	$order->update_meta_data( '_amo_link_emailed', time() );
-	$order->save();
-	$order->add_order_note( __( 'Payment link emailed to the customer.', 'advanced-manual-orders-for-woocommerce' ), false, true );
 }

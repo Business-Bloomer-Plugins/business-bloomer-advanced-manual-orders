@@ -18,14 +18,13 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 
 * **New order form:** click "Add order", on the orders list or on an order. Start from a past order (pick from your latest 10 or search by name, email or number) and repeat it whole, or copy its products for a customer and currency you choose. Saved addresses are filled in.
 * **Add products in one click:** an "Add a product" box always sits above the order items. Best sellers come first, or type a name or SKU. Each pick adds one, pick it again for more. Every variation is listed on its own, "Any" attributes included, so there's nothing else to pick. Pick a product that's already on the order and its quantity goes up.
-* **Currency per order:** pick any currency for a manual order, on the form or on the order screen while the order is unpaid. The currencies your store sells in come first, read from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster.
+* **Currency per order:** turn on the currency selector (one click, or in the settings) and pick any currency for a manual order, on the form or on the order screen while the order is unpaid. The currencies your store sells in come first, read from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster.
 * **Real shipping rates:** "Calculate shipping", next to Recalculate, shows the rates of your shipping zones for these items and this address, the same ones checkout would show. Pick one and it's added with its tax.
 * **Taxes that update on their own:** add or remove items, change quantities or the address, and taxes and totals are recalculated. No more Recalculate button.
-* **Duplicate order:** an exact copy, same customer, items, prices, shipping, fees and coupons. Payment details, invoices, license keys and order notes stay with the original.
+* **Duplicate order:** one click from the orders list, the order preview or the order screen. An exact copy, same customer, items, prices, shipping, fees and coupons, saved as a new pending order. Payment details, invoices, license keys and order notes stay with the original.
 * **New order for this customer:** a fresh order with the same customer and addresses.
 * **New order with these products:** the same products and quantities at today's prices.
 * **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. "Copy link" button next to it.
-* **Payment link email:** optionally email the link to the customer as soon as you create a pending order.
 
 New orders open as drafts with WooCommerce's own "Create" button, exactly like a normal new order. Drafts you never create are cleaned up by WooCommerce after a few days.
 

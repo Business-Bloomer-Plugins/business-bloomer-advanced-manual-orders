@@ -5,6 +5,6 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-foreach ( array( 'amo_popup', 'amo_auto_totals', 'amo_currencies', 'amo_guest_pay', 'amo_email_on_new', 'amo_same_price_fix' ) as $amo_option ) {
+foreach ( array( 'amo_popup', 'amo_auto_totals', 'amo_currencies', 'amo_guest_pay', 'amo_currency', 'amo_same_price_fix' ) as $amo_option ) {
 	delete_option( $amo_option );
 }

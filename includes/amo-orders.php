@@ -15,16 +15,22 @@ add_filter( 'woocommerce_redirect_order_location', 'amo_redirect_to_new_draft' )
 add_action( 'woocommerce_admin_order_data_after_order_details', 'amo_currency_field' );
 add_action( 'wp_ajax_amo_set_currency', 'amo_ajax_set_currency' );
 add_action( 'wp_ajax_amo_search_orders', 'amo_ajax_search_orders' );
+add_action( 'wp_ajax_amo_toggle_currency', 'amo_ajax_toggle_currency' );
+add_action( 'admin_post_amo_duplicate', 'amo_handle_duplicate_link' );
+add_filter( 'woocommerce_admin_order_actions', 'amo_list_duplicate_button', 10, 2 );
+add_filter( 'woocommerce_admin_order_preview_actions', 'amo_list_duplicate_button', 10, 2 );
+add_filter( 'default_hidden_columns', 'amo_show_actions_column', 20, 2 );
 
 /**
- * Creates a draft order, the same kind WooCommerce makes when you click "Add order".
- * It shows the "Create" button and is removed after a few days if never created.
+ * Creates a new order. By default a draft, the same kind WooCommerce makes when you click
+ * "Add order": it shows the "Create" button and is removed after a few days if never created.
  *
  * @param array $args {
  *     @type int           $customer_id Customer to assign, with their saved addresses.
  *     @type string        $currency    Order currency.
  *     @type WC_Order|null $source      Order to copy from.
  *     @type string        $copy        What to copy from $source: all, customer, products.
+ *     @type string        $status      auto-draft, or a real status like pending so it shows in the list.
  * }
  * @return WC_Order
  */
@@ -36,6 +42,7 @@ function amo_create_draft( $args ) {
 			'currency'    => '',
 			'source'      => null,
 			'copy'        => '',
+			'status'      => 'auto-draft',
 		)
 	);
 
@@ -90,6 +97,11 @@ function amo_create_draft( $args ) {
 
 		/* translators: %s: order number */
 		$order->add_order_note( sprintf( __( 'Created from order #%s.', 'advanced-manual-orders-for-woocommerce' ), $source->get_order_number() ) );
+	}
+
+	if ( 'auto-draft' !== $args['status'] ) {
+		$order->set_status( $args['status'] );
+		$order->save();
 	}
 
 	do_action( 'amo_draft_created', $order, $args );
@@ -253,6 +265,7 @@ function amo_action_duplicate( $order ) {
 			array(
 				'source' => $order,
 				'copy'   => 'all',
+				'status' => 'pending',
 			)
 		)
 	);
@@ -269,6 +282,7 @@ function amo_action_same_customer( $order ) {
 			array(
 				'source' => $order,
 				'copy'   => 'customer',
+				'status' => 'pending',
 			)
 		)
 	);
@@ -285,6 +299,7 @@ function amo_action_same_products( $order ) {
 			array(
 				'source' => $order,
 				'copy'   => 'products',
+				'status' => 'pending',
 			)
 		)
 	);
@@ -312,13 +327,57 @@ function amo_currency_field( $order ) {
 	}
 
 	?>
-	<p class="form-field form-field-wide amo-currency">
-		<label for="amo_currency"><?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-		<select id="amo_currency" name="amo_currency" class="wc-enhanced-select">
-			<?php amo_currency_options( $order->get_currency() ); ?>
+	<div class="form-field form-field-wide amo-currency-wrap">
+		<?php amo_currency_selector( 'amo_currency', $order->get_currency() ); ?>
+	</div>
+	<?php
+}
+
+/**
+ * Currency dropdown, or the link that turns it on. A second link turns it off.
+ *
+ * @param string $id       Field ID and name.
+ * @param string $selected Selected currency.
+ */
+function amo_currency_selector( $id, $selected ) {
+	$on        = amo_enabled( 'currency' );
+	$can_reset = current_user_can( 'manage_woocommerce' );
+
+	if ( ! $on && ! $can_reset ) {
+		return;
+	}
+	?>
+	<p class="amo-currency amo-advanced" <?php echo $on ? '' : 'hidden'; ?>>
+		<label for="<?php echo esc_attr( $id ); ?>">
+			<?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?>
+			<?php if ( $can_reset ) : ?>
+				<a href="#" class="amo-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+			<?php endif; ?>
+		</label>
+		<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" class="wc-enhanced-select" style="width:100%">
+			<?php amo_currency_options( $selected ); ?>
 		</select>
 	</p>
+	<?php if ( $can_reset ) : ?>
+		<p class="amo-currency-off" <?php echo $on ? 'hidden' : ''; ?>>
+			<a href="#" class="amo-currency-toggle amo-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+		</p>
+	<?php endif; ?>
 	<?php
+}
+
+/**
+ * Turns the currency selector on or off from the order screen.
+ */
+function amo_ajax_toggle_currency() {
+	check_ajax_referer( 'amo_admin', 'security' );
+
+	if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		wp_send_json_error();
+	}
+
+	update_option( 'amo_currency', empty( $_POST['on'] ) ? 'no' : 'yes' );
+	wp_send_json_success();
 }
 
 /**
@@ -422,4 +481,64 @@ function amo_ajax_search_orders() {
 	}
 
 	wp_send_json( array( 'results' => $results ) );
+}
+
+/**
+ * Duplicate button in the orders list and in the order preview.
+ *
+ * @param array    $actions Action buttons.
+ * @param WC_Order $order   Order.
+ * @return array
+ */
+function amo_list_duplicate_button( $actions, $order ) {
+	if ( $order instanceof WC_Order && 'shop_order' === $order->get_type() && current_user_can( 'edit_shop_orders' ) ) {
+		$actions['amo_duplicate'] = array(
+			'url'    => wp_nonce_url( admin_url( 'admin-post.php?action=amo_duplicate&order_id=' . $order->get_id() ), 'amo_duplicate_' . $order->get_id() ),
+			'name'   => __( 'Duplicate', 'advanced-manual-orders-for-woocommerce' ),
+			'title'  => __( 'Duplicate this order', 'advanced-manual-orders-for-woocommerce' ),
+			'action' => 'amo-duplicate',
+		);
+	}
+	return $actions;
+}
+
+/**
+ * Duplicate button clicked in the orders list or the preview.
+ */
+function amo_handle_duplicate_link() {
+	$order_id = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
+
+	check_admin_referer( 'amo_duplicate_' . $order_id );
+
+	$order = wc_get_order( $order_id );
+
+	if ( ! $order || 'shop_order' !== $order->get_type() || ! current_user_can( 'edit_shop_orders' ) ) {
+		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
+	}
+
+	$copy = amo_create_draft(
+		array(
+			'source' => $order,
+			'copy'   => 'all',
+			'status' => 'pending',
+		)
+	);
+
+	wp_safe_redirect( $copy->get_edit_order_url() );
+	exit;
+}
+
+/**
+ * Shows the Actions column of the orders list by default, where the Duplicate button is.
+ * Screen Options can still hide it.
+ *
+ * @param string[]  $hidden Hidden columns.
+ * @param WP_Screen $screen Screen.
+ * @return string[]
+ */
+function amo_show_actions_column( $hidden, $screen ) {
+	if ( isset( $screen->id ) && in_array( $screen->id, array( 'edit-shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
+		$hidden = array_values( array_diff( $hidden, array( 'wc_actions' ) ) );
+	}
+	return $hidden;
 }
