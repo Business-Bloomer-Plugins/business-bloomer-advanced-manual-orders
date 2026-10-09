@@ -187,21 +187,32 @@
 	box-shadow: none;
 }
 
-/* WooCommerce buttons that got a tip from the plugin. */
-#woocommerce-order-items .button.amo-tip {
-	position: relative;
+/* WooCommerce buttons that got a tip from the plugin: info icon after the label. */
+#woocommerce-order-items .button.amo-tip::after,
+.amo-help-tip::after {
+	font-family: dashicons;
+	content: "\f14c";
+	margin-left: 4px;
+	font-size: 16px;
+	line-height: 1;
+	vertical-align: -3px;
+	color: var(--amo-accent);
 }
 
-#woocommerce-order-items .button.amo-tip::after {
-	content: "";
-	position: absolute;
-	top: -4px;
-	right: -4px;
-	width: 9px;
-	height: 9px;
-	background: var(--amo-accent);
-	border: 2px solid #fff;
-	border-radius: 50%;
+.amo-help-tip {
+	display: inline-block;
+	cursor: help;
+}
+
+/* Our entries in the "Choose an action" list. */
+select[name="wc_order_action"] option[value^="amo_"] {
+	color: var(--amo-accent);
+	font-weight: 600;
+}
+
+#actions .amo-help-tip {
+	margin-left: 2px;
+	vertical-align: middle;
 }
 
 #woocommerce-order-items .amo-quick-add {
@@ -226,17 +237,18 @@
 
 .amo-quick-add .select2-selection--single {
 	height: 40px;
-	border: 2px solid var(--amo-accent) !important;
+	border: 1px solid var(--amo-accent) !important;
+	box-shadow: none !important;
 }
 
 .amo-quick-add .select2-selection--single .select2-selection__rendered {
 	text-align: left;
-	line-height: 36px;
+	line-height: 38px;
 	font-weight: 600;
 }
 
 .amo-quick-add .select2-selection--single .select2-selection__arrow {
-	height: 36px;
+	height: 38px;
 }
 
 #woocommerce-order-items .button.amo-calc-shipping {
@@ -277,8 +289,17 @@
 }
 
 .wc-order-preview .wc-action-button-amo-duplicate {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 4px;
 	color: var(--amo-accent);
 	border-color: var(--amo-accent);
+}
+
+.wc-order-preview .wc-action-button-amo-duplicate::before {
+	font-family: dashicons;
+	content: "\f105";
+	font-size: 16px;
 }
 
 .amo-badge {

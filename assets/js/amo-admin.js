@@ -311,6 +311,22 @@ jQuery( function ( $ ) {
 		new MutationObserver( decorate ).observe( $items.find( '.inside' )[ 0 ], { childList: true } );
 	}
 
+	/* ---------- "Choose an action": point out the plugin's entries ---------- */
+
+	var $actions = $( 'select[name="wc_order_action"]' );
+	if ( $actions.find( 'option[value^="amo_"]' ).length ) {
+		var $help = $( '<span class="amo-help-tip" tabindex="0"></span>' ).attr( { 'data-tip': i18n.tipActions, 'aria-label': i18n.tipActions } );
+		$actions.siblings( 'button.wc-reload' ).after( $help );
+		if ( $.fn.tipTip ) {
+			$help.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
+		}
+		$help.on( 'focus', function () {
+			$help.trigger( 'mouseenter' );
+		} ).on( 'blur', function () {
+			$help.trigger( 'mouseleave' );
+		} );
+	}
+
 	/* ---------- Currency ---------- */
 
 	$( '#order_data' ).on( 'change', '#amo_currency', function () {
