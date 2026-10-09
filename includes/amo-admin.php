@@ -77,6 +77,8 @@ function amo_enqueue() {
 				'tipShipping'   => __( 'Tip: "Calculate shipping" adds real rates from your shipping zones, with tax.', 'advanced-manual-orders-for-woocommerce' ),
 				'tipCalcShip'   => __( 'Real rates from your shipping zones for these items and this address, the same ones checkout shows.', 'advanced-manual-orders-for-woocommerce' ),
 				'tipCoupon'     => __( 'Totals and taxes update on their own after the coupon is applied.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipFee'        => __( 'Tip: type an amount, or a percentage like 10% of the order. Totals and taxes update on their own.', 'advanced-manual-orders-for-woocommerce' ),
+				'tipTax'        => __( 'Not needed for normal taxes: they come from your tax settings and the customer address. Use it only for an extra rate on this order.', 'advanced-manual-orders-for-woocommerce' ),
 			),
 		)
 	);

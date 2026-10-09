@@ -171,8 +171,37 @@
 }
 
 .amo-link:hover,
-.amo-currency-toggle:hover {
+.amo-link:focus,
+.amo-currency-toggle:hover,
+.amo-currency-toggle:focus,
+#order_data .wc-order-status .amo-copy-link:hover,
+#order_data .wc-order-status .amo-copy-link:focus {
 	color: var(--amo-accent-hover);
+	text-decoration-thickness: 2px;
+}
+
+.amo-link:focus-visible,
+.amo-currency-toggle:focus-visible {
+	outline: 2px solid var(--amo-accent);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* WooCommerce buttons that got a tip from the plugin. */
+#woocommerce-order-items .button.amo-tip {
+	position: relative;
+}
+
+#woocommerce-order-items .button.amo-tip::after {
+	content: "";
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	width: 9px;
+	height: 9px;
+	background: var(--amo-accent);
+	border: 2px solid #fff;
+	border-radius: 50%;
 }
 
 #woocommerce-order-items .amo-quick-add {
@@ -231,9 +260,6 @@
 	text-decoration: underline;
 }
 
-#order_data .wc-order-status .amo-copy-link:hover {
-	color: var(--amo-accent-hover);
-}
 
 #order_data .wc-order-status .amo-copy-link::before {
 	content: "\f105";

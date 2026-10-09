@@ -263,6 +263,15 @@ jQuery( function ( $ ) {
 
 	/* ---------- Tooltips on WooCommerce's own buttons ---------- */
 
+	var tipCount = 0;
+
+	// Keyboard users see the tip on focus too.
+	$items.on( 'focus', '.amo-tip', function () {
+		$( this ).trigger( 'mouseenter' );
+	} ).on( 'blur', '.amo-tip', function () {
+		$( this ).trigger( 'mouseleave' );
+	} );
+
 	function tips() {
 		var $inside = $items.find( '.inside' );
 		var list = [
@@ -270,12 +279,19 @@ jQuery( function ( $ ) {
 			[ 'button.calculate-action', i18n.tipRecalc, amo.autoTotals ],
 			[ 'button.add-order-shipping', i18n.tipShipping, amo.shipping ],
 			[ 'button.add-coupon', i18n.tipCoupon, amo.autoTotals ],
+			[ 'button.add-order-fee', i18n.tipFee, true ],
+			[ 'button.add-order-tax', i18n.tipTax, true ],
 			[ 'button.amo-calc-shipping', i18n.tipCalcShip, true ]
 		];
 
 		$.each( list, function ( n, tip ) {
 			if ( tip[ 2 ] ) {
-				$inside.find( tip[ 0 ] ).not( '.amo-tip' ).addClass( 'amo-tip' ).attr( 'data-tip', tip[ 1 ] );
+				$inside.find( tip[ 0 ] ).not( '.amo-tip' ).each( function () {
+					// Screen readers get the tip as the button's description.
+					var id = 'amo-tip-' + ( ++tipCount );
+					$( this ).addClass( 'amo-tip' ).attr( { 'data-tip': tip[ 1 ], 'aria-describedby': id } )
+						.after( $( '<span class="screen-reader-text"></span>' ).attr( 'id', id ).text( tip[ 1 ] ) );
+				} );
 			}
 		} );
 
