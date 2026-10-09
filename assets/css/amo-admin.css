@@ -1,4 +1,4 @@
-.mosw-modal {
+.amo-modal {
 	position: fixed;
 	inset: 0;
 	z-index: 100000;
@@ -9,11 +9,11 @@
 	background: rgba(0, 0, 0, 0.6);
 }
 
-.mosw-modal[hidden] {
+.amo-modal[hidden] {
 	display: none;
 }
 
-.mosw-modal__box {
+.amo-modal__box {
 	width: 100%;
 	max-width: 520px;
 	max-height: 90vh;
@@ -24,30 +24,30 @@
 	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
-.mosw-modal__box h2 {
+.amo-modal__box h2 {
 	margin-top: 0;
 }
 
-.mosw-modal__box p {
+.amo-modal__box p {
 	margin: 0 0 16px;
 }
 
-.mosw-modal__box label {
+.amo-modal__box label {
 	display: block;
 	margin-bottom: 4px;
 	font-weight: 600;
 }
 
-.mosw-modal__box input[type="number"] {
+.amo-modal__box input[type="number"] {
 	width: 100%;
 }
 
-.mosw-modal__box .description {
+.amo-modal__box .description {
 	display: block;
 	margin-top: 4px;
 }
 
-.mosw-modal__actions {
+.amo-modal__actions {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
@@ -55,20 +55,20 @@
 	margin-top: 24px;
 }
 
-.mosw-modal__actions .mosw-skip {
+.amo-modal__actions .amo-skip {
 	margin-right: auto;
 }
 
-.mosw-rates fieldset {
+.amo-rates fieldset {
 	margin-bottom: 16px;
 }
 
-.mosw-rates legend {
+.amo-rates legend {
 	margin-bottom: 8px;
 	font-weight: 600;
 }
 
-.mosw-rates label {
+.amo-rates label {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -77,11 +77,11 @@
 	border-bottom: 1px solid #f0f0f1;
 }
 
-.mosw-rates input[type="radio"] {
+.amo-rates input[type="radio"] {
 	margin: 0;
 }
 
-.mosw-rate-cost {
+.amo-rate-cost {
 	margin-left: auto;
 	font-weight: 600;
 }
@@ -91,7 +91,7 @@
 	z-index: 100001;
 }
 
-.wc-order-status .mosw-copy-link {
+.wc-order-status .amo-copy-link {
 	float: right;
 	margin-right: 8px;
 	font-weight: 400;
@@ -99,4 +99,22 @@
 
 .select2-results__group {
 	font-weight: 600;
+}
+
+.amo-copy {
+	margin: -8px 0 16px;
+}
+
+.amo-copy[hidden],
+.amo-new-fields[hidden] {
+	display: none;
+}
+
+.amo-modal__box .amo-copy label {
+	margin: 8px 0 0;
+	font-weight: 400;
+}
+
+.amo-copy .description {
+	margin: 2px 0 0 24px;
 }

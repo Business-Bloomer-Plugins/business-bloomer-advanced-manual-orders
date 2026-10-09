@@ -1,8 +1,8 @@
-/* global jQuery, mosw, woocommerce_admin_meta_boxes */
+/* global jQuery, amo, woocommerce_admin_meta_boxes */
 jQuery( function ( $ ) {
 	'use strict';
 
-	var i18n = mosw.i18n;
+	var i18n = amo.i18n;
 
 	/* ---------- Simple modal ---------- */
 
@@ -15,11 +15,11 @@ jQuery( function ( $ ) {
 		$modal.prop( 'hidden', true );
 	}
 
-	$( document ).on( 'click', '.mosw-modal .mosw-close', function () {
-		closeModal( $( this ).closest( '.mosw-modal' ) );
+	$( document ).on( 'click', '.amo-modal .amo-close', function () {
+		closeModal( $( this ).closest( '.amo-modal' ) );
 	} );
 
-	$( document ).on( 'click', '.mosw-modal', function ( e ) {
+	$( document ).on( 'click', '.amo-modal', function ( e ) {
 		if ( e.target === this ) {
 			closeModal( $( this ) );
 		}
@@ -28,26 +28,26 @@ jQuery( function ( $ ) {
 	$( document ).on( 'keydown', function ( e ) {
 		// Escape in an open dropdown only closes the dropdown.
 		if ( 'Escape' === e.key && ! $( '.select2-container--open' ).length ) {
-			closeModal( $( '.mosw-modal:not([hidden])' ) );
+			closeModal( $( '.amo-modal:not([hidden])' ) );
 		}
 	} );
 
 	/* ---------- "Add order" form, on the orders list and the order screen ---------- */
 
-	var $form = $( '#mosw-new-order' );
+	var $form = $( '#amo-new-order' );
 
-	if ( mosw.popup && $form.length ) {
-		$form.find( '#mosw_copy_from' ).selectWoo( {
+	if ( amo.popup && $form.length ) {
+		$form.find( '#amo_copy_from' ).selectWoo( {
 			width: '100%',
 			allowClear: true,
-			placeholder: $form.find( '#mosw_copy_from' ).data( 'placeholder' ),
+			placeholder: $form.find( '#amo_copy_from' ).data( 'placeholder' ),
 			minimumInputLength: 0,
 			ajax: {
-				url: mosw.ajaxUrl,
+				url: amo.ajaxUrl,
 				dataType: 'json',
 				delay: 250,
 				data: function ( params ) {
-					return { action: 'mosw_search_orders', security: mosw.nonce, term: params.term || '' };
+					return { action: 'amo_search_orders', security: amo.nonce, term: params.term || '' };
 				},
 				processResults: function ( data ) {
 					return data;
@@ -55,18 +55,27 @@ jQuery( function ( $ ) {
 			}
 		} );
 
+		// A past order picked: repeat it all, or copy its products for the customer below.
+		function copyMode() {
+			var picked = !! $form.find( '#amo_copy_from' ).val();
+			var all = picked && 'all' === $form.find( 'input[name="amo_copy"]:checked' ).val();
+			$form.find( '.amo-copy' ).prop( 'hidden', ! picked );
+			$form.find( '.amo-new-fields' ).prop( 'hidden', all );
+		}
+		$form.on( 'change', '#amo_copy_from, input[name="amo_copy"]', copyMode );
+
 		$( document ).on( 'click', 'a.page-title-action', function ( e ) {
 			var href = $( this ).attr( 'href' ) || '';
 			if ( ! /action=new|post-new\.php\?post_type=shop_order/.test( href ) ) {
 				return;
 			}
 			e.preventDefault();
-			$form.find( '.mosw-skip' ).attr( 'href', href );
+			$form.find( '.amo-skip' ).attr( 'href', href );
 			openModal( $form );
 		} );
 	}
 
-	if ( 'edit' !== mosw.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
+	if ( 'edit' !== amo.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
 		return;
 	}
 
@@ -112,7 +121,7 @@ jQuery( function ( $ ) {
 
 	// Products added to the order are priced for the address on screen, even before it's saved.
 	$.ajaxPrefilter( function ( options ) {
-		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|mosw_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
+		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|amo_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
 			options.data += '&' + $.param( taxableAddress() );
 		}
 	} );
@@ -143,18 +152,18 @@ jQuery( function ( $ ) {
 	}
 
 	// Core requests after which totals are stale.
-	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|mosw_add_shipping|mosw_add_product)(&|$)/;
+	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|amo_add_shipping|amo_add_product)(&|$)/;
 
 	$( document ).ajaxComplete( function ( e, xhr, settings ) {
 		if ( ! xhr || 200 !== xhr.status || 'string' !== typeof settings.data || ! stale.test( settings.data ) ) {
 			return;
 		}
-		if ( mosw.autoTotals || /action=mosw_add_shipping/.test( settings.data ) ) {
+		if ( amo.autoTotals || /action=amo_add_shipping/.test( settings.data ) ) {
 			recalculate();
 		}
 	} );
 
-	if ( mosw.autoTotals ) {
+	if ( amo.autoTotals ) {
 		var timer;
 		$( '#order_data' ).on( 'change', '[id^="_billing_"], [id^="_shipping_"]', function () {
 			if ( ! /_(country|state|postcode|city)$/.test( this.id ) || ! $items.find( 'tr.item' ).length ) {
@@ -171,11 +180,11 @@ jQuery( function ( $ ) {
 		var $inside = $items.find( '.inside' );
 		var $row = $inside.find( '.woocommerce_order_items_wrapper' );
 
-		if ( ! $row.length || $inside.find( '.mosw-quick-add' ).length || ! $inside.find( 'button.add-line-item' ).length ) {
+		if ( ! $row.length || $inside.find( '.amo-quick-add' ).length || ! $inside.find( 'button.add-line-item' ).length ) {
 			return;
 		}
 
-		var $box = $( '<div class="wc-order-data-row mosw-quick-add"><select class="mosw-product-search"></select></div>' );
+		var $box = $( '<div class="wc-order-data-row amo-quick-add"><select class="amo-product-search"></select></div>' );
 		$row.before( $box );
 
 		var $select = $box.find( 'select' );
@@ -192,12 +201,12 @@ jQuery( function ( $ ) {
 				}
 			},
 			ajax: {
-				url: mosw.ajaxUrl,
+				url: amo.ajaxUrl,
 				dataType: 'json',
 				delay: 250,
 				cache: true,
 				data: function ( params ) {
-					return { action: 'mosw_search_products', security: mosw.nonce, term: params.term || '', page: params.page || 1 };
+					return { action: 'amo_search_products', security: amo.nonce, term: params.term || '', page: params.page || 1 };
 				},
 				processResults: function ( data ) {
 					return data;
@@ -207,8 +216,8 @@ jQuery( function ( $ ) {
 
 		$select.on( 'select2:select', function ( e ) {
 			var data = {
-				action: 'mosw_add_product',
-				security: mosw.nonce,
+				action: 'amo_add_product',
+				security: amo.nonce,
 				order_id: orderId,
 				product_id: e.params.data.id
 			};
@@ -219,7 +228,7 @@ jQuery( function ( $ ) {
 			}
 
 			block();
-			$.post( mosw.ajaxUrl, data ).done( function ( res ) {
+			$.post( amo.ajaxUrl, data ).done( function ( res ) {
 				if ( ! res || ! res.success ) {
 					window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
 					return;
@@ -227,7 +236,7 @@ jQuery( function ( $ ) {
 				$items.find( '.inside' ).empty().append( res.data.html );
 				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.data.notes_html );
 				$items.trigger( 'wc_order_items_reloaded' );
-				$items.find( '.mosw-product-search' ).selectWoo( 'focus' );
+				$items.find( '.amo-product-search' ).selectWoo( 'focus' );
 			} ).fail( function () {
 				window.alert( i18n.error );
 			} ).always( unblock );
@@ -242,11 +251,11 @@ jQuery( function ( $ ) {
 
 	/* ---------- Currency ---------- */
 
-	$( '#order_data' ).on( 'change', '#mosw_currency', function () {
+	$( '#order_data' ).on( 'change', '#amo_currency', function () {
 		block();
-		$.post( mosw.ajaxUrl, {
-			action: 'mosw_set_currency',
-			security: mosw.nonce,
+		$.post( amo.ajaxUrl, {
+			action: 'amo_set_currency',
+			security: amo.nonce,
 			order_id: orderId,
 			currency: $( this ).val()
 		} ).done( function ( res ) {
@@ -259,18 +268,18 @@ jQuery( function ( $ ) {
 
 	/* ---------- Shipping rates ---------- */
 
-	var $ship = $( '<div class="mosw-modal" hidden><div class="mosw-modal__box" role="dialog" aria-modal="true"><h2></h2><div class="mosw-rates"></div><p class="description"></p><div class="mosw-modal__actions"><button type="button" class="button mosw-close"></button><button type="button" class="button button-primary mosw-add-shipping"></button></div></div></div>' );
+	var $ship = $( '<div class="amo-modal" hidden><div class="amo-modal__box" role="dialog" aria-modal="true"><h2></h2><div class="amo-rates"></div><p class="description"></p><div class="amo-modal__actions"><button type="button" class="button amo-close"></button><button type="button" class="button button-primary amo-add-shipping"></button></div></div></div>' );
 	$ship.find( 'h2' ).text( i18n.shippingTitle );
 	$ship.find( '.description' ).text( i18n.replaceNote );
-	$ship.find( '.mosw-close' ).text( i18n.cancel );
-	$ship.find( '.mosw-add-shipping' ).text( i18n.add );
+	$ship.find( '.amo-close' ).text( i18n.cancel );
+	$ship.find( '.amo-add-shipping' ).text( i18n.add );
 	$( 'body' ).append( $ship );
 
-	$items.on( 'click', 'button.mosw-calc-shipping', function () {
+	$items.on( 'click', 'button.amo-calc-shipping', function () {
 		block();
-		$.post( mosw.ajaxUrl, $.extend( {}, shippingAddress(), {
-			action: 'mosw_shipping_rates',
-			security: mosw.nonce,
+		$.post( amo.ajaxUrl, $.extend( {}, shippingAddress(), {
+			action: 'amo_shipping_rates',
+			security: amo.nonce,
 			order_id: orderId
 		} ) ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
@@ -278,7 +287,7 @@ jQuery( function ( $ ) {
 				return;
 			}
 
-			var $rates = $ship.find( '.mosw-rates' ).empty();
+			var $rates = $ship.find( '.amo-rates' ).empty();
 			var many = res.data.packages.length > 1;
 
 			$.each( res.data.packages, function ( n, pkg ) {
@@ -288,9 +297,9 @@ jQuery( function ( $ ) {
 				}
 				$.each( pkg.rates, function ( r, rate ) {
 					var $label = $( '<label></label>' );
-					$label.append( $( '<input type="radio">' ).attr( { name: 'mosw_rate_' + pkg.index, value: rate.id } ).prop( 'checked', 0 === r ) );
-					$label.append( $( '<span class="mosw-rate-label"></span>' ).text( rate.label ) );
-					$label.append( $( '<span class="mosw-rate-cost"></span>' ).text( rate.cost ) );
+					$label.append( $( '<input type="radio">' ).attr( { name: 'amo_rate_' + pkg.index, value: rate.id } ).prop( 'checked', 0 === r ) );
+					$label.append( $( '<span class="amo-rate-label"></span>' ).text( rate.label ) );
+					$label.append( $( '<span class="amo-rate-cost"></span>' ).text( rate.cost ) );
 					$set.append( $label );
 				} );
 				$rates.append( $set );
@@ -302,10 +311,10 @@ jQuery( function ( $ ) {
 		} ).always( unblock );
 	} );
 
-	$ship.on( 'click', '.mosw-add-shipping', function () {
+	$ship.on( 'click', '.amo-add-shipping', function () {
 		var data = $.extend( {}, shippingAddress(), {
-			action: 'mosw_add_shipping',
-			security: mosw.nonce,
+			action: 'amo_add_shipping',
+			security: amo.nonce,
 			order_id: orderId
 		} );
 
@@ -317,7 +326,7 @@ jQuery( function ( $ ) {
 		block();
 
 		// Totals refresh through the ajaxComplete handler above.
-		$.post( mosw.ajaxUrl, data ).done( function ( res ) {
+		$.post( amo.ajaxUrl, data ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
 				window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
 			}
@@ -328,7 +337,7 @@ jQuery( function ( $ ) {
 
 	var $payLink = $( '.wc-order-status label a[href*="pay_for_order"]' );
 	if ( $payLink.length && navigator.clipboard ) {
-		var $copy = $( '<button type="button" class="button-link mosw-copy-link"></button>' ).text( i18n.copyLink );
+		var $copy = $( '<button type="button" class="button-link amo-copy-link"></button>' ).text( i18n.copyLink );
 		$payLink.after( $copy );
 		$copy.on( 'click', function ( e ) {
 			e.preventDefault();

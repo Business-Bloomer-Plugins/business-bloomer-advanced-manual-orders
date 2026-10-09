@@ -6,8 +6,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'wp_ajax_mosw_search_products', 'mosw_ajax_search_products' );
-add_action( 'wp_ajax_mosw_add_product', 'mosw_ajax_add_product' );
+add_action( 'wp_ajax_amo_search_products', 'amo_ajax_search_products' );
+add_action( 'wp_ajax_amo_add_product', 'amo_ajax_add_product' );
 
 /**
  * One line of the product list: name or attributes, price, SKU, stock.
@@ -17,7 +17,7 @@ add_action( 'wp_ajax_mosw_add_product', 'mosw_ajax_add_product' );
  * @param array      $chosen    Values picked for the variation's "Any" attributes.
  * @return string
  */
-function mosw_product_label( $product, $variation = false, $chosen = array() ) {
+function amo_product_label( $product, $variation = false, $chosen = array() ) {
 	$parts = array();
 
 	if ( $variation ) {
@@ -27,7 +27,7 @@ function mosw_product_label( $product, $variation = false, $chosen = array() ) {
 			$label = wc_attribute_label( $name, $parent ? $parent : $product );
 			if ( '' === $value ) {
 				/* translators: %s: attribute name, e.g. Size */
-				$value = sprintf( __( 'Any %s', 'manual-order-superpowers-for-woocommerce' ), $label );
+				$value = sprintf( __( 'Any %s', 'advanced-manual-orders-for-woocommerce' ), $label );
 			} elseif ( taxonomy_exists( $name ) ) {
 				$term  = get_term_by( 'slug', $value, $name );
 				$value = $term ? $term->name : $value;
@@ -40,21 +40,21 @@ function mosw_product_label( $product, $variation = false, $chosen = array() ) {
 	}
 
 	$price   = $product->get_price();
-	$parts[] = '' === $price ? __( 'No price', 'manual-order-superpowers-for-woocommerce' ) : html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES, 'UTF-8' );
+	$parts[] = '' === $price ? __( 'No price', 'advanced-manual-orders-for-woocommerce' ) : html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES, 'UTF-8' );
 
 	if ( $product->get_sku() ) {
 		$parts[] = $product->get_sku();
 	}
 
 	if ( ! $product->is_in_stock() ) {
-		$parts[] = __( 'Out of stock', 'manual-order-superpowers-for-woocommerce' );
+		$parts[] = __( 'Out of stock', 'advanced-manual-orders-for-woocommerce' );
 	} elseif ( $product->managing_stock() ) {
 		/* translators: %s: stock quantity */
-		$parts[] = sprintf( __( '%s in stock', 'manual-order-superpowers-for-woocommerce' ), wc_stock_amount( $product->get_stock_quantity() ) );
+		$parts[] = sprintf( __( '%s in stock', 'advanced-manual-orders-for-woocommerce' ), wc_stock_amount( $product->get_stock_quantity() ) );
 	}
 
 	if ( 'private' === $product->get_status() && ! $variation ) {
-		$parts[] = __( 'Private', 'manual-order-superpowers-for-woocommerce' );
+		$parts[] = __( 'Private', 'advanced-manual-orders-for-woocommerce' );
 	}
 
 	return implode( ' · ', $parts );
@@ -68,8 +68,8 @@ function mosw_product_label( $product, $variation = false, $chosen = array() ) {
  * @param WC_Product_Variable  $variable  Its variable product.
  * @return array[] Lists of attribute name => value. One empty list when nothing is "Any".
  */
-function mosw_any_combinations( $variation, $variable ) {
-	$options = mosw_attribute_options( $variable );
+function amo_any_combinations( $variation, $variable ) {
+	$options = amo_attribute_options( $variable );
 	$combos  = array( array() );
 
 	foreach ( $variation->get_variation_attributes( false ) as $name => $value ) {
@@ -84,7 +84,7 @@ function mosw_any_combinations( $variation, $variable ) {
 		}
 		$combos = $next;
 
-		if ( count( $combos ) > (int) apply_filters( 'mosw_max_any_combinations', 30 ) ) {
+		if ( count( $combos ) > (int) apply_filters( 'amo_max_any_combinations', 30 ) ) {
 			return array( array() );
 		}
 	}
@@ -98,7 +98,7 @@ function mosw_any_combinations( $variation, $variable ) {
  * @param WC_Product $variable Variable product.
  * @return array Attribute key => options.
  */
-function mosw_attribute_options( $variable ) {
+function amo_attribute_options( $variable ) {
 	$options = array();
 	foreach ( $variable->get_variation_attributes() as $name => $values ) {
 		$options[ sanitize_title( $name ) ] = array_values( $values );
@@ -113,12 +113,12 @@ function mosw_attribute_options( $variable ) {
  * @param string     $query   name=value pairs.
  * @return array Attribute name => value.
  */
-function mosw_parse_any_values( $product, $query ) {
+function amo_parse_any_values( $product, $query ) {
 	$values = array();
 	parse_str( $query, $values );
 
 	$parent  = wc_get_product( $product->get_parent_id() );
-	$options = $parent ? mosw_attribute_options( $parent ) : array();
+	$options = $parent ? amo_attribute_options( $parent ) : array();
 	$chosen  = array();
 
 	foreach ( $product->get_variation_attributes( false ) as $name => $value ) {
@@ -134,8 +134,8 @@ function mosw_parse_any_values( $product, $query ) {
  * Product list for the "Add a product" box. Empty search: best sellers.
  * Variable products come as a group with one entry per variation.
  */
-function mosw_ajax_search_products() {
-	check_ajax_referer( 'mosw_admin', 'security' );
+function amo_ajax_search_products() {
+	check_ajax_referer( 'amo_admin', 'security' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
 		wp_die( -1 );
@@ -143,7 +143,7 @@ function mosw_ajax_search_products() {
 
 	$term     = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
 	$page     = isset( $_GET['page'] ) ? max( 1, absint( $_GET['page'] ) ) : 1;
-	$per_page = (int) apply_filters( 'mosw_products_per_page', 20 );
+	$per_page = (int) apply_filters( 'amo_products_per_page', 20 );
 
 	// Grouped and external products can't go on an order.
 	$types = array_values( array_diff( array_keys( wc_get_product_types() ), array( 'grouped', 'external' ) ) );
@@ -218,7 +218,7 @@ function mosw_ajax_search_products() {
 		if ( ! $product->is_type( 'variable' ) ) {
 			$results[] = array(
 				'id'   => $product->get_id(),
-				'text' => mosw_product_label( $product ),
+				'text' => amo_product_label( $product ),
 			);
 			continue;
 		}
@@ -233,10 +233,10 @@ function mosw_ajax_search_products() {
 			if ( ! $child ) {
 				continue;
 			}
-			foreach ( mosw_any_combinations( $child, $product ) as $chosen ) {
+			foreach ( amo_any_combinations( $child, $product ) as $chosen ) {
 				$children[] = array(
 					'id'   => $chosen ? $child->get_id() . '|' . http_build_query( $chosen ) : $child->get_id(),
-					'text' => mosw_product_label( $child, true, $chosen ),
+					'text' => amo_product_label( $child, true, $chosen ),
 				);
 			}
 		}
@@ -260,28 +260,28 @@ function mosw_ajax_search_products() {
 /**
  * Adds a product to the order. When it's already there, the quantity goes up instead.
  */
-function mosw_ajax_add_product() {
-	check_ajax_referer( 'mosw_admin', 'security' );
+function amo_ajax_add_product() {
+	check_ajax_referer( 'amo_admin', 'security' );
 
 	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 	// "123" or, for a variation with "Any" attributes, "123|color=red".
 	$picked  = isset( $_POST['product_id'] ) ? explode( '|', sanitize_text_field( wp_unslash( $_POST['product_id'] ) ), 2 ) : array( 0 );
 	$product = wc_get_product( absint( $picked[0] ) );
-	$chosen  = $product && isset( $picked[1] ) ? mosw_parse_any_values( $product, $picked[1] ) : array();
+	$chosen  = $product && isset( $picked[1] ) ? amo_parse_any_values( $product, $picked[1] ) : array();
 
 	if ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	// One per pick. Pick again for more, or edit the quantity on the line.
 	$qty = 1;
 
 	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	if ( ! $product || $product->is_type( 'variable' ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	// Unsaved changes to the items on screen are kept, like WooCommerce does.
@@ -323,7 +323,7 @@ function mosw_ajax_add_product() {
 		$order->calculate_totals( false );
 
 		/* translators: 1: product name, 2: new quantity */
-		$order->add_order_note( sprintf( __( 'Quantity of %1$s changed to %2$s.', 'manual-order-superpowers-for-woocommerce' ), $product->get_formatted_name(), $new ), false, true );
+		$order->add_order_note( sprintf( __( 'Quantity of %1$s changed to %2$s.', 'advanced-manual-orders-for-woocommerce' ), $product->get_formatted_name(), $new ), false, true );
 	} else {
 		$args = array( 'order' => $order );
 		if ( $chosen ) {
@@ -335,12 +335,12 @@ function mosw_ajax_add_product() {
 		do_action( 'woocommerce_ajax_add_order_item_meta', $item_id, $item, $order );
 
 		/* translators: %s: product name */
-		$order->add_order_note( sprintf( __( 'Added line items: %s', 'manual-order-superpowers-for-woocommerce' ), $product->get_formatted_name() ), false, true );
+		$order->add_order_note( sprintf( __( 'Added line items: %s', 'advanced-manual-orders-for-woocommerce' ), $product->get_formatted_name() ), false, true );
 
 		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order );
 	}
 
-	wp_send_json_success( mosw_order_items_html( $order->get_id() ) );
+	wp_send_json_success( amo_order_items_html( $order->get_id() ) );
 }
 
 /**
@@ -349,7 +349,7 @@ function mosw_ajax_add_product() {
  * @param int $order_id Order ID.
  * @return array html, notes_html.
  */
-function mosw_order_items_html( $order_id ) {
+function amo_order_items_html( $order_id ) {
 	$order = wc_get_order( $order_id );
 
 	ob_start();

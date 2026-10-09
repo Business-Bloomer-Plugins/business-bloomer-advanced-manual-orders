@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Manual Order Superpowers">
-	<description>WordPress Coding Standards for Manual Order Superpowers.</description>
+<ruleset name="Advanced Manual Orders">
+	<description>WordPress Coding Standards for Advanced Manual Orders.</description>
 
 	<arg name="extensions" value="php"/>
 	<arg value="sp"/>

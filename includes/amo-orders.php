@@ -5,16 +5,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'admin_post_mosw_new_order', 'mosw_handle_new_order_form' );
-add_filter( 'woocommerce_order_actions', 'mosw_order_actions', 10, 2 );
-add_action( 'woocommerce_order_action_mosw_duplicate', 'mosw_action_duplicate' );
-add_action( 'woocommerce_order_action_mosw_same_customer', 'mosw_action_same_customer' );
-add_action( 'woocommerce_order_action_mosw_same_products', 'mosw_action_same_products' );
-add_filter( 'redirect_post_location', 'mosw_redirect_to_new_draft' );
-add_filter( 'woocommerce_redirect_order_location', 'mosw_redirect_to_new_draft' );
-add_action( 'woocommerce_admin_order_data_after_order_details', 'mosw_currency_field' );
-add_action( 'wp_ajax_mosw_set_currency', 'mosw_ajax_set_currency' );
-add_action( 'wp_ajax_mosw_search_orders', 'mosw_ajax_search_orders' );
+add_action( 'admin_post_amo_new_order', 'amo_handle_new_order_form' );
+add_filter( 'woocommerce_order_actions', 'amo_order_actions', 10, 2 );
+add_action( 'woocommerce_order_action_amo_duplicate', 'amo_action_duplicate' );
+add_action( 'woocommerce_order_action_amo_same_customer', 'amo_action_same_customer' );
+add_action( 'woocommerce_order_action_amo_same_products', 'amo_action_same_products' );
+add_filter( 'redirect_post_location', 'amo_redirect_to_new_draft' );
+add_filter( 'woocommerce_redirect_order_location', 'amo_redirect_to_new_draft' );
+add_action( 'woocommerce_admin_order_data_after_order_details', 'amo_currency_field' );
+add_action( 'wp_ajax_amo_set_currency', 'amo_ajax_set_currency' );
+add_action( 'wp_ajax_amo_search_orders', 'amo_ajax_search_orders' );
 
 /**
  * Creates a draft order, the same kind WooCommerce makes when you click "Add order".
@@ -28,7 +28,7 @@ add_action( 'wp_ajax_mosw_search_orders', 'mosw_ajax_search_orders' );
  * }
  * @return WC_Order
  */
-function mosw_create_draft( $args ) {
+function amo_create_draft( $args ) {
 	$args = wp_parse_args(
 		$args,
 		array(
@@ -58,18 +58,17 @@ function mosw_create_draft( $args ) {
 		$order->set_address( $source->get_address( 'shipping' ), 'shipping' );
 		$order->set_currency( $source->get_currency() );
 	} elseif ( $args['customer_id'] ) {
-		mosw_set_customer( $order, $args['customer_id'] );
+		amo_set_customer( $order, $args['customer_id'] );
 	}
 
+	// What belongs to the original's payment and processing is never copied: payment method,
+	// transaction ID, paid and completed dates, invoices, stock changes, order notes.
 	if ( $source && 'all' === $args['copy'] ) {
 		$order->set_prices_include_tax( $source->get_prices_include_tax() );
-		$order->set_payment_method( $source->get_payment_method() );
-		$order->set_payment_method_title( $source->get_payment_method_title() );
 		$order->set_customer_note( $source->get_customer_note() );
 
-		// Custom fields only. Underscore meta holds payment and system data that belongs to the original.
 		foreach ( $source->get_meta_data() as $meta ) {
-			if ( '_' !== substr( $meta->key, 0, 1 ) ) {
+			if ( amo_copy_meta( $meta->key, $source ) ) {
 				$order->add_meta_data( $meta->key, $meta->value );
 			}
 		}
@@ -79,7 +78,7 @@ function mosw_create_draft( $args ) {
 
 	if ( $source && in_array( $args['copy'], array( 'all', 'products' ), true ) ) {
 		$fresh = 'products' === $args['copy'];
-		mosw_copy_items( $source, $order, $fresh );
+		amo_copy_items( $source, $order, $fresh );
 
 		if ( $fresh ) {
 			$order->calculate_totals();
@@ -90,10 +89,10 @@ function mosw_create_draft( $args ) {
 		}
 
 		/* translators: %s: order number */
-		$order->add_order_note( sprintf( __( 'Created from order #%s.', 'manual-order-superpowers-for-woocommerce' ), $source->get_order_number() ) );
+		$order->add_order_note( sprintf( __( 'Created from order #%s.', 'advanced-manual-orders-for-woocommerce' ), $source->get_order_number() ) );
 	}
 
-	do_action( 'mosw_draft_created', $order, $args );
+	do_action( 'amo_draft_created', $order, $args );
 
 	return $order;
 }
@@ -104,7 +103,7 @@ function mosw_create_draft( $args ) {
  * @param WC_Order $order       Order.
  * @param int      $customer_id Customer user ID.
  */
-function mosw_set_customer( $order, $customer_id ) {
+function amo_set_customer( $order, $customer_id ) {
 	$customer = new WC_Customer( $customer_id );
 
 	if ( ! $customer->get_id() ) {
@@ -121,18 +120,29 @@ function mosw_set_customer( $order, $customer_id ) {
 }
 
 /**
+ * Whether a custom field of an order or line item goes to the copy. Visible fields, like
+ * variation attributes or product options, are copied. Hidden ones (starting with _) hold
+ * what was added while the original was paid and processed, like invoice numbers,
+ * license keys, tracking numbers and stock changes, so they stay with the original.
+ *
+ * @param string                 $key    Meta key.
+ * @param WC_Order|WC_Order_Item $owner  Order or line item it belongs to.
+ * @return bool
+ */
+function amo_copy_meta( $key, $owner ) {
+	return (bool) apply_filters( 'amo_copy_meta', '_' !== substr( $key, 0, 1 ), $key, $owner );
+}
+
+/**
  * Copies line items from one order to another.
  *
  * @param WC_Order $from  Source order.
  * @param WC_Order $to    Target order.
  * @param bool     $fresh True: products only, at today's prices. False: every line as it was.
  */
-function mosw_copy_items( $from, $to, $fresh ) {
+function amo_copy_items( $from, $to, $fresh ) {
 	// Tax lines are rebuilt from the copied items.
 	$types = $fresh ? array( 'line_item' ) : array( 'line_item', 'fee', 'shipping', 'coupon' );
-
-	// Stock bookkeeping of the original order, never copied.
-	$skip_meta = array( '_reduced_stock', '_restock_refunded_items' );
 
 	foreach ( $from->get_items( $types ) as $item ) {
 		$product = is_callable( array( $item, 'get_product' ) ) ? $item->get_product() : null;
@@ -148,7 +158,7 @@ function mosw_copy_items( $from, $to, $fresh ) {
 		$new->set_props( $data );
 
 		foreach ( $item->get_meta_data() as $meta ) {
-			if ( ! in_array( $meta->key, $skip_meta, true ) ) {
+			if ( amo_copy_meta( $meta->key, $item ) ) {
 				$new->add_meta_data( $meta->key, $meta->value );
 			}
 		}
@@ -168,8 +178,8 @@ function mosw_copy_items( $from, $to, $fresh ) {
 
 		$to->add_item( $new );
 
-		if ( $fresh && $new instanceof WC_Order_Item_Product && mosw_same_price_fix_active() ) {
-			mosw_same_price_item( $new, mosw_tax_location( $to ) );
+		if ( $fresh && $new instanceof WC_Order_Item_Product && amo_same_price_fix_active() ) {
+			amo_same_price_item( $new, amo_tax_location( $to ) );
 		}
 	}
 
@@ -179,22 +189,22 @@ function mosw_copy_items( $from, $to, $fresh ) {
 /**
  * Handles the "Add order" form.
  */
-function mosw_handle_new_order_form() {
-	check_admin_referer( 'mosw_new_order' );
+function amo_handle_new_order_form() {
+	check_admin_referer( 'amo_new_order' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'manual-order-superpowers-for-woocommerce' ) );
+		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
 	}
 
-	$currency = isset( $_POST['mosw_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['mosw_currency'] ) ) : '';
-	$source   = ! empty( $_POST['mosw_copy_from'] ) ? wc_get_order( absint( $_POST['mosw_copy_from'] ) ) : null;
+	$currency = isset( $_POST['amo_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amo_currency'] ) ) : '';
+	$source   = ! empty( $_POST['amo_copy_from'] ) ? wc_get_order( absint( $_POST['amo_copy_from'] ) ) : null;
 
-	$order = mosw_create_draft(
+	$order = amo_create_draft(
 		array(
-			'customer_id' => isset( $_POST['mosw_customer'] ) ? absint( $_POST['mosw_customer'] ) : 0,
-			'currency'    => array_key_exists( $currency, mosw_currencies() ) ? $currency : '',
+			'customer_id' => isset( $_POST['amo_customer'] ) ? absint( $_POST['amo_customer'] ) : 0,
+			'currency'    => array_key_exists( $currency, amo_currencies() ) ? $currency : '',
 			'source'      => $source && 'shop_order' === $source->get_type() ? $source : null,
-			'copy'        => 'products',
+			'copy'        => isset( $_POST['amo_copy'] ) && 'all' === sanitize_key( $_POST['amo_copy'] ) ? 'all' : 'products',
 		)
 	);
 
@@ -209,11 +219,11 @@ function mosw_handle_new_order_form() {
  * @param WC_Order $order   Order being edited.
  * @return array
  */
-function mosw_order_actions( $actions, $order = null ) {
+function amo_order_actions( $actions, $order = null ) {
 	if ( $order && $order->get_id() && 'auto-draft' !== $order->get_status() ) {
-		$actions['mosw_duplicate']     = __( 'Duplicate order', 'manual-order-superpowers-for-woocommerce' );
-		$actions['mosw_same_customer'] = __( 'New order for this customer', 'manual-order-superpowers-for-woocommerce' );
-		$actions['mosw_same_products'] = __( 'New order with these products', 'manual-order-superpowers-for-woocommerce' );
+		$actions['amo_duplicate']     = __( 'Duplicate order', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amo_same_customer'] = __( 'New order for this customer', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amo_same_products'] = __( 'New order with these products', 'advanced-manual-orders-for-woocommerce' );
 	}
 	return $actions;
 }
@@ -224,7 +234,7 @@ function mosw_order_actions( $actions, $order = null ) {
  * @param WC_Order|null $order Draft, or null to read it.
  * @return WC_Order|null
  */
-function mosw_new_draft( $order = null ) {
+function amo_new_draft( $order = null ) {
 	static $draft = null;
 	if ( $order ) {
 		$draft = $order;
@@ -237,9 +247,9 @@ function mosw_new_draft( $order = null ) {
  *
  * @param WC_Order $order Order.
  */
-function mosw_action_duplicate( $order ) {
-	mosw_new_draft(
-		mosw_create_draft(
+function amo_action_duplicate( $order ) {
+	amo_new_draft(
+		amo_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'all',
@@ -253,9 +263,9 @@ function mosw_action_duplicate( $order ) {
  *
  * @param WC_Order $order Order.
  */
-function mosw_action_same_customer( $order ) {
-	mosw_new_draft(
-		mosw_create_draft(
+function amo_action_same_customer( $order ) {
+	amo_new_draft(
+		amo_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'customer',
@@ -269,9 +279,9 @@ function mosw_action_same_customer( $order ) {
  *
  * @param WC_Order $order Order.
  */
-function mosw_action_same_products( $order ) {
-	mosw_new_draft(
-		mosw_create_draft(
+function amo_action_same_products( $order ) {
+	amo_new_draft(
+		amo_create_draft(
 			array(
 				'source' => $order,
 				'copy'   => 'products',
@@ -286,8 +296,8 @@ function mosw_action_same_products( $order ) {
  * @param string $location Redirect URL.
  * @return string
  */
-function mosw_redirect_to_new_draft( $location ) {
-	$draft = mosw_new_draft();
+function amo_redirect_to_new_draft( $location ) {
+	$draft = amo_new_draft();
 	return $draft ? $draft->get_edit_order_url() : $location;
 }
 
@@ -296,16 +306,16 @@ function mosw_redirect_to_new_draft( $location ) {
  *
  * @param WC_Order $order Order.
  */
-function mosw_currency_field( $order ) {
+function amo_currency_field( $order ) {
 	if ( ! $order->is_editable() || $order->get_date_paid() ) {
 		return;
 	}
 
 	?>
-	<p class="form-field form-field-wide mosw-currency">
-		<label for="mosw_currency"><?php esc_html_e( 'Currency', 'manual-order-superpowers-for-woocommerce' ); ?></label>
-		<select id="mosw_currency" name="mosw_currency" class="wc-enhanced-select">
-			<?php mosw_currency_options( $order->get_currency() ); ?>
+	<p class="form-field form-field-wide amo-currency">
+		<label for="amo_currency"><?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?></label>
+		<select id="amo_currency" name="amo_currency" class="wc-enhanced-select">
+			<?php amo_currency_options( $order->get_currency() ); ?>
 		</select>
 	</p>
 	<?php
@@ -314,8 +324,8 @@ function mosw_currency_field( $order ) {
 /**
  * Saves the currency as soon as it changes, so items added next use it.
  */
-function mosw_ajax_set_currency() {
-	check_ajax_referer( 'mosw_admin', 'security' );
+function amo_ajax_set_currency() {
+	check_ajax_referer( 'amo_admin', 'security' );
 
 	$order    = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 	$currency = isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : '';
@@ -324,7 +334,7 @@ function mosw_ajax_set_currency() {
 		wp_send_json_error();
 	}
 
-	if ( ! array_key_exists( $currency, mosw_currencies() ) ) {
+	if ( ! array_key_exists( $currency, amo_currencies() ) ) {
 		wp_send_json_error();
 	}
 
@@ -336,7 +346,7 @@ function mosw_ajax_set_currency() {
 
 		if ( 'auto-draft' !== $order->get_status() ) {
 			/* translators: 1: old currency code, 2: new currency code */
-			$order->add_order_note( sprintf( __( 'Currency changed from %1$s to %2$s. Item prices were not converted.', 'manual-order-superpowers-for-woocommerce' ), $old, $currency ) );
+			$order->add_order_note( sprintf( __( 'Currency changed from %1$s to %2$s. Item prices were not converted.', 'advanced-manual-orders-for-woocommerce' ), $old, $currency ) );
 		}
 	}
 
@@ -346,8 +356,8 @@ function mosw_ajax_set_currency() {
 /**
  * Orders for the "Copy products from" picker. Empty search: the latest 10.
  */
-function mosw_ajax_search_orders() {
-	check_ajax_referer( 'mosw_admin', 'security' );
+function amo_ajax_search_orders() {
+	check_ajax_referer( 'amo_admin', 'security' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
 		wp_die( -1 );
@@ -391,7 +401,7 @@ function mosw_ajax_search_orders() {
 	foreach ( $orders as $order ) {
 		$name = trim( $order->get_formatted_billing_full_name() );
 		if ( ! $name ) {
-			$name = $order->get_billing_email() ? $order->get_billing_email() : __( 'Guest', 'manual-order-superpowers-for-woocommerce' );
+			$name = $order->get_billing_email() ? $order->get_billing_email() : __( 'Guest', 'advanced-manual-orders-for-woocommerce' );
 		}
 		$count = $order->get_item_count();
 
@@ -403,7 +413,7 @@ function mosw_ajax_search_orders() {
 					'#' . $order->get_order_number(),
 					$name,
 					/* translators: %d: number of items */
-					sprintf( _n( '%d item', '%d items', $count, 'manual-order-superpowers-for-woocommerce' ), $count ),
+					sprintf( _n( '%d item', '%d items', $count, 'advanced-manual-orders-for-woocommerce' ), $count ),
 					html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ),
 					$order->get_date_created() ? wc_format_datetime( $order->get_date_created() ) : '',
 				)

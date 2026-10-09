@@ -9,20 +9,20 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'woocommerce_order_item_add_action_buttons', 'mosw_shipping_button' );
-add_action( 'wp_ajax_mosw_shipping_rates', 'mosw_ajax_shipping_rates' );
-add_action( 'wp_ajax_mosw_add_shipping', 'mosw_ajax_add_shipping' );
+add_action( 'woocommerce_order_item_add_action_buttons', 'amo_shipping_button' );
+add_action( 'wp_ajax_amo_shipping_rates', 'amo_ajax_shipping_rates' );
+add_action( 'wp_ajax_amo_add_shipping', 'amo_ajax_add_shipping' );
 
 /**
  * "Calculate shipping" button next to "Recalculate", always in view.
  *
  * @param WC_Order $order Order.
  */
-function mosw_shipping_button( $order ) {
+function amo_shipping_button( $order ) {
 	if ( ! wc_shipping_enabled() || ! $order->is_editable() ) {
 		return;
 	}
-	echo '<button type="button" class="button mosw-calc-shipping">' . esc_html__( 'Calculate shipping', 'manual-order-superpowers-for-woocommerce' ) . '</button>';
+	echo '<button type="button" class="button amo-calc-shipping">' . esc_html__( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ) . '</button>';
 }
 
 /**
@@ -32,7 +32,7 @@ function mosw_shipping_button( $order ) {
  * @param array    $destination country, state, postcode, city, address_1, address_2.
  * @return WC_Shipping_Rate[][] Package index => rate ID => rate.
  */
-function mosw_get_shipping_rates( $order, $destination ) {
+function amo_get_shipping_rates( $order, $destination ) {
 	$wc    = WC();
 	$saved = array(
 		'cart'     => $wc->cart,
@@ -83,7 +83,7 @@ function mosw_get_shipping_rates( $order, $destination ) {
 				}
 			}
 
-			$key              = $wc->cart->generate_cart_id( $item->get_product_id(), $item->get_variation_id(), $variation, array( 'mosw_item' => $item_id ) );
+			$key              = $wc->cart->generate_cart_id( $item->get_product_id(), $item->get_variation_id(), $variation, array( 'amo_item' => $item_id ) );
 			$contents[ $key ] = array(
 				'key'          => $key,
 				'product_id'   => $item->get_product_id(),
@@ -123,13 +123,13 @@ function mosw_get_shipping_rates( $order, $destination ) {
  *
  * @return array Order and destination.
  */
-function mosw_shipping_request() {
-	check_ajax_referer( 'mosw_admin', 'security' );
+function amo_shipping_request() {
+	check_ajax_referer( 'amo_admin', 'security' );
 
 	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 
 	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	$destination = array();
@@ -138,7 +138,7 @@ function mosw_shipping_request() {
 	}
 
 	if ( ! $destination['country'] ) {
-		wp_send_json_error( array( 'message' => __( 'Enter the shipping or billing country first.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Enter the shipping or billing country first.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	return array( $order, $destination );
@@ -147,12 +147,12 @@ function mosw_shipping_request() {
 /**
  * Returns the available rates to the order screen.
  */
-function mosw_ajax_shipping_rates() {
-	list( $order, $destination ) = mosw_shipping_request();
+function amo_ajax_shipping_rates() {
+	list( $order, $destination ) = amo_shipping_request();
 
 	$packages = array();
 
-	foreach ( mosw_get_shipping_rates( $order, $destination ) as $index => $rates ) {
+	foreach ( amo_get_shipping_rates( $order, $destination ) as $index => $rates ) {
 		$list = array();
 		foreach ( $rates as $rate_id => $rate ) {
 			$list[] = array(
@@ -168,7 +168,7 @@ function mosw_ajax_shipping_rates() {
 	}
 
 	if ( ! $packages ) {
-		wp_send_json_error( array( 'message' => __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	wp_send_json_success( array( 'packages' => $packages ) );
@@ -177,14 +177,14 @@ function mosw_ajax_shipping_rates() {
 /**
  * Replaces the order's shipping lines with the chosen rates.
  */
-function mosw_ajax_add_shipping() {
-	list( $order, $destination ) = mosw_shipping_request();
+function amo_ajax_add_shipping() {
+	list( $order, $destination ) = amo_shipping_request();
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in mosw_shipping_request().
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in amo_shipping_request().
 	$chosen = isset( $_POST['rates'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['rates'] ) ) : array();
 	$added  = array();
 
-	foreach ( mosw_get_shipping_rates( $order, $destination ) as $index => $rates ) {
+	foreach ( amo_get_shipping_rates( $order, $destination ) as $index => $rates ) {
 		$rate_id = isset( $chosen[ $index ] ) ? $chosen[ $index ] : '';
 		if ( isset( $rates[ $rate_id ] ) ) {
 			$added[] = $rates[ $rate_id ];
@@ -192,7 +192,7 @@ function mosw_ajax_add_shipping() {
 	}
 
 	if ( ! $added ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a shipping method.', 'manual-order-superpowers-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a shipping method.', 'advanced-manual-orders-for-woocommerce' ) ) );
 	}
 
 	foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {

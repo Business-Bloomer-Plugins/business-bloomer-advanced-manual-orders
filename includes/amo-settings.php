@@ -5,16 +5,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_filter( 'woocommerce_get_sections_advanced', 'mosw_add_section' );
-add_filter( 'woocommerce_get_settings_advanced', 'mosw_section_settings', 10, 2 );
+add_filter( 'woocommerce_get_sections_advanced', 'amo_add_section' );
+add_filter( 'woocommerce_get_settings_advanced', 'amo_section_settings', 10, 2 );
 
 /**
  * Returns a setting, falling back to its default.
  *
- * @param string $key Setting name without the mosw_ prefix.
+ * @param string $key Setting name without the amo_ prefix.
  * @return mixed
  */
-function mosw_get_option( $key ) {
+function amo_get_option( $key ) {
 	$defaults = array(
 		'popup'          => 'yes',
 		'auto_totals'    => 'yes',
@@ -24,17 +24,17 @@ function mosw_get_option( $key ) {
 		'same_price_fix' => 'yes',
 	);
 
-	return get_option( 'mosw_' . $key, isset( $defaults[ $key ] ) ? $defaults[ $key ] : '' );
+	return get_option( 'amo_' . $key, isset( $defaults[ $key ] ) ? $defaults[ $key ] : '' );
 }
 
 /**
  * True when a yes/no setting is on.
  *
- * @param string $key Setting name without the mosw_ prefix.
+ * @param string $key Setting name without the amo_ prefix.
  * @return bool
  */
-function mosw_enabled( $key ) {
-	return 'yes' === mosw_get_option( $key );
+function amo_enabled( $key ) {
+	return 'yes' === amo_get_option( $key );
 }
 
 /**
@@ -42,8 +42,8 @@ function mosw_enabled( $key ) {
  *
  * @return string
  */
-function mosw_settings_url() {
-	return admin_url( 'admin.php?page=wc-settings&tab=advanced&section=mosw' );
+function amo_settings_url() {
+	return admin_url( 'admin.php?page=wc-settings&tab=advanced&section=amo' );
 }
 
 /**
@@ -52,8 +52,8 @@ function mosw_settings_url() {
  * @param array $sections Advanced tab sections.
  * @return array
  */
-function mosw_add_section( $sections ) {
-	$sections['mosw'] = __( 'Manual orders', 'manual-order-superpowers-for-woocommerce' );
+function amo_add_section( $sections ) {
+	$sections['amo'] = __( 'Manual orders', 'advanced-manual-orders-for-woocommerce' );
 	return $sections;
 }
 
@@ -64,36 +64,36 @@ function mosw_add_section( $sections ) {
  * @param string $section  Current section.
  * @return array
  */
-function mosw_section_settings( $settings, $section ) {
-	if ( 'mosw' !== $section ) {
+function amo_section_settings( $settings, $section ) {
+	if ( 'amo' !== $section ) {
 		return $settings;
 	}
 
 	$fields = array(
 		array(
-			'title' => __( 'Manual orders', 'manual-order-superpowers-for-woocommerce' ),
+			'title' => __( 'Manual orders', 'advanced-manual-orders-for-woocommerce' ),
 			'type'  => 'title',
-			'desc'  => __( 'How orders you create in the admin behave.', 'manual-order-superpowers-for-woocommerce' ),
-			'id'    => 'mosw_options',
+			'desc'  => __( 'How orders you create in the admin behave.', 'advanced-manual-orders-for-woocommerce' ),
+			'id'    => 'amo_options',
 		),
 		array(
-			'title'   => __( 'New order form', 'manual-order-superpowers-for-woocommerce' ),
-			'desc'    => __( 'Ask for customer, currency and products to copy when you click "Add order"', 'manual-order-superpowers-for-woocommerce' ),
-			'id'      => 'mosw_popup',
+			'title'   => __( 'New order form', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'    => __( 'Ask for customer, currency and products to copy when you click "Add order"', 'advanced-manual-orders-for-woocommerce' ),
+			'id'      => 'amo_popup',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
-			'title'   => __( 'Taxes and totals', 'manual-order-superpowers-for-woocommerce' ),
-			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'manual-order-superpowers-for-woocommerce' ),
-			'id'      => 'mosw_auto_totals',
+			'title'   => __( 'Taxes and totals', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'advanced-manual-orders-for-woocommerce' ),
+			'id'      => 'amo_auto_totals',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
-			'title'    => __( 'Currencies', 'manual-order-superpowers-for-woocommerce' ),
-			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'manual-order-superpowers-for-woocommerce' ),
-			'id'       => 'mosw_currencies',
+			'title'    => __( 'Currencies', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'advanced-manual-orders-for-woocommerce' ),
+			'id'       => 'amo_currencies',
 			'type'     => 'multiselect',
 			'class'    => 'wc-enhanced-select',
 			'options'  => get_woocommerce_currencies(),
@@ -101,45 +101,45 @@ function mosw_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
-			'title'    => __( 'Payment link', 'manual-order-superpowers-for-woocommerce' ),
-			'desc'     => __( 'Customers can pay without logging in', 'manual-order-superpowers-for-woocommerce' ),
-			'id'       => 'mosw_guest_pay',
+			'title'    => __( 'Payment link', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'     => __( 'Customers can pay without logging in', 'advanced-manual-orders-for-woocommerce' ),
+			'id'       => 'amo_guest_pay',
 			'type'     => 'checkbox',
 			'default'  => 'yes',
-			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'manual-order-superpowers-for-woocommerce' ),
+			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'advanced-manual-orders-for-woocommerce' ),
 		),
 		array(
-			'desc'    => __( 'Email the payment link to the customer when you create a pending order', 'manual-order-superpowers-for-woocommerce' ),
-			'id'      => 'mosw_email_on_new',
+			'desc'    => __( 'Email the payment link to the customer when you create a pending order', 'advanced-manual-orders-for-woocommerce' ),
+			'id'      => 'amo_email_on_new',
 			'type'    => 'checkbox',
 			'default' => 'no',
 		),
 		array(
 			'type' => 'sectionend',
-			'id'   => 'mosw_options',
+			'id'   => 'amo_options',
 		),
 	);
 
-	// Until WooCommerce 11.3, see mosw-tax-fix.php.
-	if ( mosw_same_price_fix_needed() ) {
+	// Until WooCommerce 11.3, see amo-tax-fix.php.
+	if ( amo_same_price_fix_needed() ) {
 		array_splice(
 			$fields,
 			-1,
 			0,
 			array(
 				array(
-					'title'    => __( 'Same price in every country', 'manual-order-superpowers-for-woocommerce' ),
-					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'manual-order-superpowers-for-woocommerce' ),
-					'id'       => 'mosw_same_price_fix',
+					'title'    => __( 'Same price in every country', 'advanced-manual-orders-for-woocommerce' ),
+					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'advanced-manual-orders-for-woocommerce' ),
+					'id'       => 'amo_same_price_fix',
 					'type'     => 'checkbox',
 					'default'  => 'yes',
-					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'manual-order-superpowers-for-woocommerce' ),
+					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'advanced-manual-orders-for-woocommerce' ),
 				),
 			)
 		);
 	}
 
-	return apply_filters( 'mosw_settings_fields', $fields );
+	return apply_filters( 'amo_settings_fields', $fields );
 }
 
 /**
@@ -148,7 +148,7 @@ function mosw_section_settings( $settings, $section ) {
  *
  * @return string[] Currency codes.
  */
-function mosw_store_currencies() {
+function amo_store_currencies() {
 	$codes = array( get_option( 'woocommerce_currency' ) );
 
 	// WooPayments.
@@ -211,10 +211,10 @@ function mosw_store_currencies() {
 		}
 	}
 
-	$codes = array_merge( $codes, (array) mosw_get_option( 'currencies' ) );
+	$codes = array_merge( $codes, (array) amo_get_option( 'currencies' ) );
 	$codes = array_intersect( array_unique( array_filter( array_map( 'strval', $codes ) ) ), array_keys( get_woocommerce_currencies() ) );
 
-	return array_values( (array) apply_filters( 'mosw_store_currencies', $codes ) );
+	return array_values( (array) apply_filters( 'amo_store_currencies', $codes ) );
 }
 
 /**
@@ -222,10 +222,10 @@ function mosw_store_currencies() {
  *
  * @return array
  */
-function mosw_currencies() {
+function amo_currencies() {
 	$all   = get_woocommerce_currencies();
 	$first = array();
-	foreach ( mosw_store_currencies() as $code ) {
+	foreach ( amo_store_currencies() as $code ) {
 		$first[ $code ] = $all[ $code ];
 	}
 
@@ -237,12 +237,12 @@ function mosw_currencies() {
  *
  * @param string $selected Selected currency code.
  */
-function mosw_currency_options( $selected ) {
-	$all    = mosw_currencies();
-	$store  = array_intersect_key( $all, array_flip( mosw_store_currencies() ) );
+function amo_currency_options( $selected ) {
+	$all    = amo_currencies();
+	$store  = array_intersect_key( $all, array_flip( amo_store_currencies() ) );
 	$groups = array(
-		__( 'Store currencies', 'manual-order-superpowers-for-woocommerce' ) => $store,
-		__( 'All currencies', 'manual-order-superpowers-for-woocommerce' )   => array_diff_key( $all, $store ),
+		__( 'Store currencies', 'advanced-manual-orders-for-woocommerce' ) => $store,
+		__( 'All currencies', 'advanced-manual-orders-for-woocommerce' )   => array_diff_key( $all, $store ),
 	);
 
 	foreach ( $groups as $label => $currencies ) {
