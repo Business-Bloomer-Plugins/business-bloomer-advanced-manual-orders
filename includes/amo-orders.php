@@ -359,6 +359,7 @@ function amo_currency_selector( $id, $selected ) {
 	<p class="amo-currency amo-advanced" <?php echo $on ? '' : 'hidden'; ?>>
 		<label for="<?php echo esc_attr( $id ); ?>">
 			<?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?>
+			<?php amo_help_tip( __( 'The currency of this order. Your store currencies come first. Prices you type are not converted.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
 			<?php if ( $can_reset ) : ?>
 				<a href="#" class="amo-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
 			<?php endif; ?>
@@ -370,9 +371,19 @@ function amo_currency_selector( $id, $selected ) {
 	<?php if ( $can_reset ) : ?>
 		<p class="amo-currency-off" <?php echo $on ? 'hidden' : ''; ?>>
 			<a href="#" class="amo-currency-toggle amo-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+			<?php amo_help_tip( __( 'Adds a currency dropdown to new and unpaid orders, so you can take an order in another currency. You can remove it again at any time.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
 		</p>
 	<?php endif; ?>
 	<?php
+}
+
+/**
+ * Info icon with a tooltip, in the plugin's color.
+ *
+ * @param string $tip Tooltip text.
+ */
+function amo_help_tip( $tip ) {
+	printf( '<span class="amo-help-tip" tabindex="0" data-tip="%1$s" aria-label="%1$s"></span>', esc_attr( $tip ) );
 }
 
 /**
@@ -504,7 +515,11 @@ function amo_list_duplicate_button( $actions, $order ) {
 		$actions['amo_duplicate'] = array(
 			'url'    => wp_nonce_url( admin_url( 'admin-post.php?action=amo_duplicate&order_id=' . $order->get_id() ), 'amo_duplicate_' . $order->get_id() ),
 			'name'   => __( 'Duplicate', 'advanced-manual-orders-for-woocommerce' ),
-			'title'  => __( 'Duplicate this order', 'advanced-manual-orders-for-woocommerce' ),
+			'title'  => sprintf(
+				/* translators: %s: order status, e.g. Pending payment */
+				__( 'Duplicate this order: a new "%s" order with the same customer, items, shipping and coupons. Payment details and invoices are not copied, and no emails are sent.', 'advanced-manual-orders-for-woocommerce' ),
+				wc_get_order_status_name( amo_duplicate_status() )
+			),
 			'action' => 'amo-duplicate',
 		);
 	}

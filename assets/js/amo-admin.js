@@ -32,6 +32,28 @@ jQuery( function ( $ ) {
 		}
 	} );
 
+	/* ---------- Tooltips ---------- */
+
+	// Info icons and the Duplicate buttons, which come with their text in data-tip or title.
+	function helpTips( $context ) {
+		if ( ! $.fn.tipTip ) {
+			return;
+		}
+		$context.find( 'a.wc-action-button-amo-duplicate[title]' ).each( function () {
+			$( this ).attr( 'data-tip', $( this ).attr( 'title' ) ).removeAttr( 'title' );
+		} );
+		$context.find( '.amo-help-tip, a.wc-action-button-amo-duplicate' ).not( '.amo-tipped' ).addClass( 'amo-tipped' )
+			.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
+	}
+
+	$( document ).on( 'focus', '.amo-help-tip', function () {
+		$( this ).trigger( 'mouseenter' );
+	} ).on( 'blur', '.amo-help-tip', function () {
+		$( this ).trigger( 'mouseleave' );
+	} );
+
+	helpTips( $( document.body ) );
+
 	/* ---------- "Add order" form, on the orders list and the order screen ---------- */
 
 	var $form = $( '#amo-new-order' );
@@ -83,6 +105,7 @@ jQuery( function ( $ ) {
 		}
 		var $footer = $( '.wc-order-preview footer' );
 		$footer.find( '.wc-backbone-modal-buttons' ).prepend( $footer.find( '> .inner > .wc-action-button-amo-duplicate' ) );
+		helpTips( $footer );
 	} );
 
 	/* ---------- Currency selector on/off, same setting everywhere ---------- */
@@ -327,14 +350,7 @@ jQuery( function ( $ ) {
 	if ( $actions.find( 'option[value^="amo_"]' ).length ) {
 		var $help = $( '<span class="amo-help-tip" tabindex="0"></span>' ).attr( { 'data-tip': i18n.tipActions, 'aria-label': i18n.tipActions } );
 		$actions.siblings( 'button.wc-reload' ).after( $help );
-		if ( $.fn.tipTip ) {
-			$help.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
-		}
-		$help.on( 'focus', function () {
-			$help.trigger( 'mouseenter' );
-		} ).on( 'blur', function () {
-			$help.trigger( 'mouseleave' );
-		} );
+		helpTips( $help.parent() );
 	}
 
 	/* ---------- Currency ---------- */

@@ -188,8 +188,8 @@
 }
 
 /* WooCommerce buttons that got a tip from the plugin: info icon after the label. */
-#woocommerce-order-items .button.amo-tip::after,
-.amo-help-tip::after {
+.amo-help-tip::after,
+#woocommerce-order-items .button.amo-tip::after {
 	font-family: dashicons;
 	content: "\f14c";
 	margin-left: 4px;
@@ -202,6 +202,26 @@
 .amo-help-tip {
 	display: inline-block;
 	cursor: help;
+}
+
+.amo-help-tip::after {
+	margin-left: 0;
+}
+
+/* On blue primary buttons the icon is white. */
+#woocommerce-order-items .button-primary.amo-tip::after {
+	color: #fff;
+}
+
+.amo-currency-off {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.amo-currency[hidden],
+.amo-currency-off[hidden] {
+	display: none !important;
 }
 
 /* Our entries in the "Choose an action" list. */
