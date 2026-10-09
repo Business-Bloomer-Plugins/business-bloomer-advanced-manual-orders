@@ -110,6 +110,13 @@ jQuery( function ( $ ) {
 		return addr.country ? addr : address( 'billing' );
 	}
 
+	// Products added to the order are priced for the address on screen, even before it's saved.
+	$.ajaxPrefilter( function ( options ) {
+		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|mosw_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
+			options.data += '&' + $.param( taxableAddress() );
+		}
+	} );
+
 	/* ---------- Automatic taxes and totals ---------- */
 
 	// Recalculate, without the "are you sure" prompt.

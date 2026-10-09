@@ -47,6 +47,10 @@ Any method that works at checkout: flat rate, free shipping (including minimum a
 
 It only applies to orders created in the admin, and only with the full payment link, which contains a secret key. Anyone with the link can see that order and pay it, the same as a guest order. You can switch it off in the settings.
 
+= My store charges the same price in every country and manual orders get it wrong. =
+
+If you set `woocommerce_adjust_non_base_location_prices` to false, WooCommerce 10.5 to 11.2 price products added to a manual order for the wrong country ([issue 63701](https://github.com/woocommerce/woocommerce/issues/63701)). The plugin fixes it until WooCommerce 11.3 ships the official fix. You can switch it off in the settings.
+
 = Does it work with HPOS? =
 
 Yes, with both order storage types.

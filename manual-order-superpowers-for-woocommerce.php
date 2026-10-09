@@ -48,6 +48,7 @@ function mosw_init() {
 	require_once MOSW_PLUGIN_DIR . 'includes/mosw-shipping.php';
 	require_once MOSW_PLUGIN_DIR . 'includes/mosw-products.php';
 	require_once MOSW_PLUGIN_DIR . 'includes/mosw-payment.php';
+	require_once MOSW_PLUGIN_DIR . 'includes/mosw-tax-fix.php';
 
 	add_filter( 'plugin_action_links_' . plugin_basename( MOSW_PLUGIN_FILE ), 'mosw_action_links' );
 }

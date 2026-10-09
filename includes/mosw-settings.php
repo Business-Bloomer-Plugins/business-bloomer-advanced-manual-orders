@@ -16,11 +16,12 @@ add_filter( 'woocommerce_get_settings_advanced', 'mosw_section_settings', 10, 2 
  */
 function mosw_get_option( $key ) {
 	$defaults = array(
-		'popup'        => 'yes',
-		'auto_totals'  => 'yes',
-		'guest_pay'    => 'yes',
-		'email_on_new' => 'no',
-		'currencies'   => array(),
+		'popup'          => 'yes',
+		'auto_totals'    => 'yes',
+		'guest_pay'      => 'yes',
+		'email_on_new'   => 'no',
+		'currencies'     => array(),
+		'same_price_fix' => 'yes',
 	);
 
 	return get_option( 'mosw_' . $key, isset( $defaults[ $key ] ) ? $defaults[ $key ] : '' );
@@ -118,6 +119,25 @@ function mosw_section_settings( $settings, $section ) {
 			'id'   => 'mosw_options',
 		),
 	);
+
+	// Until WooCommerce 11.3, see mosw-tax-fix.php.
+	if ( mosw_same_price_fix_needed() ) {
+		array_splice(
+			$fields,
+			-1,
+			0,
+			array(
+				array(
+					'title'    => __( 'Same price in every country', 'manual-order-superpowers-for-woocommerce' ),
+					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'manual-order-superpowers-for-woocommerce' ),
+					'id'       => 'mosw_same_price_fix',
+					'type'     => 'checkbox',
+					'default'  => 'yes',
+					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'manual-order-superpowers-for-woocommerce' ),
+				),
+			)
+		);
+	}
 
 	return apply_filters( 'mosw_settings_fields', $fields );
 }

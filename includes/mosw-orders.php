@@ -167,6 +167,10 @@ function mosw_copy_items( $from, $to, $fresh ) {
 		}
 
 		$to->add_item( $new );
+
+		if ( $fresh && $new instanceof WC_Order_Item_Product && mosw_same_price_fix_active() ) {
+			mosw_same_price_item( $new, mosw_tax_location( $to ) );
+		}
 	}
 
 	$to->save();
