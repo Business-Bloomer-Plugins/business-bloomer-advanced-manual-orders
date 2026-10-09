@@ -75,6 +75,16 @@ jQuery( function ( $ ) {
 		} );
 	}
 
+	/* ---------- Order preview: Duplicate next to Edit ---------- */
+
+	$( document.body ).on( 'wc_backbone_modal_loaded', function ( e, target ) {
+		if ( 'wc-modal-view-order' !== target ) {
+			return;
+		}
+		var $footer = $( '.wc-order-preview footer' );
+		$footer.find( '.wc-backbone-modal-buttons' ).prepend( $footer.find( '> .inner > .wc-action-button-amo-duplicate' ) );
+	} );
+
 	/* ---------- Currency selector on/off, same setting everywhere ---------- */
 
 	$( document ).on( 'click', '.amo-currency-toggle', function ( e ) {

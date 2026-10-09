@@ -289,17 +289,20 @@ select[name="wc_order_action"] option[value^="amo_"] {
 }
 
 .wc-order-preview .wc-action-button-amo-duplicate {
-	display: inline-flex !important;
-	align-items: center;
-	gap: 4px;
+	display: inline-block !important;
+	margin: 0 8px 0 0 !important;
 	color: var(--amo-accent);
 	border-color: var(--amo-accent);
 }
 
+/* Inline icon, so the button keeps WooCommerce's own size and alignment. */
 .wc-order-preview .wc-action-button-amo-duplicate::before {
 	font-family: dashicons;
 	content: "\f105";
 	font-size: 16px;
+	line-height: 1;
+	margin-right: 4px;
+	vertical-align: -3px;
 }
 
 .amo-badge {
