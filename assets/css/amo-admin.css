@@ -136,14 +136,14 @@
 
 .amo-currency.amo-advanced,
 .amo-currency-off {
-	padding: 8px 12px 8px 14px;
+	padding: 8px 10px;
 	background: var(--amo-accent-soft);
 	border-left: 3px solid var(--amo-accent);
 }
 
 #order_data .order_data_column .amo-currency-wrap p {
 	margin: 9px 0 0;
-	padding: 8px 12px 8px 14px !important; /* WooCommerce zeroes padding in this column. */
+	padding: 8px 10px !important; /* WooCommerce zeroes padding in this column. */
 }
 
 .amo-currency label {
@@ -221,27 +221,22 @@
 	background: var(--amo-accent-soft);
 }
 
+/* Same look as the other plugin links, right-aligned under the status. */
 #order_data .wc-order-status .amo-copy-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	margin-top: 6px;
-	color: var(--amo-accent);
+	display: block;
+	margin: 6px 0 0 auto;
+	font: inherit;
 	font-weight: 600;
-	text-decoration: none;
+	color: var(--amo-accent);
+	text-decoration: underline;
 }
 
 #order_data .wc-order-status .amo-copy-link:hover {
 	color: var(--amo-accent-hover);
-	text-decoration: underline;
 }
 
 #order_data .wc-order-status .amo-copy-link::before {
-	font-family: dashicons;
 	content: "\f105";
-	font-size: 16px;
-	font-weight: 400;
-	text-decoration: none;
 }
 
 /* Duplicate button in the orders list and the preview. */
