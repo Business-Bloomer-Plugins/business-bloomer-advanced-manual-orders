@@ -272,8 +272,9 @@ function mosw_ajax_add_product() {
 	if ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) {
 		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'manual-order-superpowers-for-woocommerce' ) ) );
 	}
-	$qty = isset( $_POST['qty'] ) ? wc_stock_amount( wp_unslash( $_POST['qty'] ) ) : 1; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wc_stock_amount() casts to a number.
-	$qty = $qty > 0 ? $qty : 1;
+
+	// One per pick. Pick again for more, or edit the quantity on the line.
+	$qty = 1;
 
 	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
 		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'manual-order-superpowers-for-woocommerce' ) ) );

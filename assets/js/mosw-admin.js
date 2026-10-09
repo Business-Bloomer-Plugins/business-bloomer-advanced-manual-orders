@@ -168,8 +168,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		var $box = $( '<div class="wc-order-data-row mosw-quick-add"><select class="mosw-product-search"></select><input type="number" class="mosw-qty" value="1" min="1" step="1"></div>' );
-		$box.find( '.mosw-qty' ).attr( { title: i18n.qty, 'aria-label': i18n.qty } );
+		var $box = $( '<div class="wc-order-data-row mosw-quick-add"><select class="mosw-product-search"></select></div>' );
 		$row.before( $box );
 
 		var $select = $box.find( 'select' );
@@ -204,8 +203,7 @@ jQuery( function ( $ ) {
 				action: 'mosw_add_product',
 				security: mosw.nonce,
 				order_id: orderId,
-				product_id: e.params.data.id,
-				qty: $box.find( '.mosw-qty' ).val() || 1
+				product_id: e.params.data.id
 			};
 
 			// Unsaved edits to the items, as WooCommerce sends them.

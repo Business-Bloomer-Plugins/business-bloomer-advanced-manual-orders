@@ -97,21 +97,6 @@
 	font-weight: 400;
 }
 
-.mosw-quick-add {
-	display: flex;
-	gap: 8px;
-	align-items: center;
-}
-
-.mosw-quick-add .select2-container {
-	flex: 1;
-	min-width: 0;
-}
-
-.mosw-quick-add .mosw-qty {
-	width: 70px;
-}
-
 .select2-results__group {
 	font-weight: 600;
 }
