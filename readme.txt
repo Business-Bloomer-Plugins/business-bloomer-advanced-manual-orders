@@ -1,4 +1,4 @@
-=== Advanced Manual Orders for WooCommerce ===
+=== Business Bloomer Advanced Manual Orders for WooCommerce ===
 Contributors: businessbloomer
 Tags: manual order, phone order, admin order, currency, add products
 Requires at least: 6.5

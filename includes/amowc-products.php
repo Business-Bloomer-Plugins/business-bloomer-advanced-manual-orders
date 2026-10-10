@@ -27,7 +27,7 @@ function amowc_product_label( $product, $variation = false, $chosen = array() ) 
 			$label = wc_attribute_label( $name, $parent ? $parent : $product );
 			if ( '' === $value ) {
 				/* translators: %s: attribute name, e.g. Size */
-				$value = sprintf( __( 'Any %s', 'advanced-manual-orders-for-woocommerce' ), $label );
+				$value = sprintf( __( 'Any %s', 'business-bloomer-advanced-manual-orders' ), $label );
 			} elseif ( taxonomy_exists( $name ) ) {
 				$term  = get_term_by( 'slug', $value, $name );
 				$value = $term ? $term->name : $value;
@@ -40,21 +40,21 @@ function amowc_product_label( $product, $variation = false, $chosen = array() ) 
 	}
 
 	$price   = $product->get_price();
-	$parts[] = '' === $price ? __( 'No price', 'advanced-manual-orders-for-woocommerce' ) : html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES, 'UTF-8' );
+	$parts[] = '' === $price ? __( 'No price', 'business-bloomer-advanced-manual-orders' ) : html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES, 'UTF-8' );
 
 	if ( $product->get_sku() ) {
 		$parts[] = $product->get_sku();
 	}
 
 	if ( ! $product->is_in_stock() ) {
-		$parts[] = __( 'Out of stock', 'advanced-manual-orders-for-woocommerce' );
+		$parts[] = __( 'Out of stock', 'business-bloomer-advanced-manual-orders' );
 	} elseif ( $product->managing_stock() ) {
 		/* translators: %s: stock quantity */
-		$parts[] = sprintf( __( '%s in stock', 'advanced-manual-orders-for-woocommerce' ), wc_stock_amount( $product->get_stock_quantity() ) );
+		$parts[] = sprintf( __( '%s in stock', 'business-bloomer-advanced-manual-orders' ), wc_stock_amount( $product->get_stock_quantity() ) );
 	}
 
 	if ( 'private' === $product->get_status() && ! $variation ) {
-		$parts[] = __( 'Private', 'advanced-manual-orders-for-woocommerce' );
+		$parts[] = __( 'Private', 'business-bloomer-advanced-manual-orders' );
 	}
 
 	return implode( ' · ', $parts );
@@ -270,18 +270,18 @@ function amowc_ajax_add_product() {
 	$chosen  = $product && isset( $picked[1] ) ? amowc_parse_any_values( $product, $picked[1] ) : array();
 
 	if ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	// One per pick. Pick again for more, or edit the quantity on the line.
 	$qty = 1;
 
 	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	if ( ! $product || $product->is_type( 'variable' ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	// Unsaved changes to the items on screen are kept, like WooCommerce does.
@@ -323,7 +323,7 @@ function amowc_ajax_add_product() {
 		$order->calculate_totals( false );
 
 		/* translators: 1: product name, 2: new quantity */
-		$order->add_order_note( sprintf( __( 'Quantity of %1$s changed to %2$s.', 'advanced-manual-orders-for-woocommerce' ), $product->get_formatted_name(), $new ), false, true );
+		$order->add_order_note( sprintf( __( 'Quantity of %1$s changed to %2$s.', 'business-bloomer-advanced-manual-orders' ), $product->get_formatted_name(), $new ), false, true );
 	} else {
 		$args = array( 'order' => $order );
 		if ( $chosen ) {
@@ -335,7 +335,7 @@ function amowc_ajax_add_product() {
 		do_action( 'woocommerce_ajax_add_order_item_meta', $item_id, $item, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 
 		/* translators: %s: product name */
-		$order->add_order_note( sprintf( __( 'Added line items: %s', 'advanced-manual-orders-for-woocommerce' ), $product->get_formatted_name() ), false, true );
+		$order->add_order_note( sprintf( __( 'Added line items: %s', 'business-bloomer-advanced-manual-orders' ), $product->get_formatted_name() ), false, true );
 
 		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	}

@@ -96,7 +96,7 @@ function amowc_create_draft( $args ) {
 		}
 
 		/* translators: %s: order number */
-		$order->add_order_note( sprintf( __( 'Created from order #%s.', 'advanced-manual-orders-for-woocommerce' ), $source->get_order_number() ) );
+		$order->add_order_note( sprintf( __( 'Created from order #%s.', 'business-bloomer-advanced-manual-orders' ), $source->get_order_number() ) );
 	}
 
 	if ( 'auto-draft' !== $args['status'] ) {
@@ -214,7 +214,7 @@ function amowc_handle_new_order_form() {
 	check_admin_referer( 'amowc_new_order' );
 
 	if ( ! current_user_can( 'edit_shop_orders' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
+		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'business-bloomer-advanced-manual-orders' ) );
 	}
 
 	$currency = isset( $_POST['amowc_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amowc_currency'] ) ) : '';
@@ -242,9 +242,9 @@ function amowc_handle_new_order_form() {
  */
 function amowc_order_actions( $actions, $order = null ) {
 	if ( $order && $order->get_id() && 'auto-draft' !== $order->get_status() ) {
-		$actions['amowc_duplicate']     = __( 'Duplicate order', 'advanced-manual-orders-for-woocommerce' );
-		$actions['amowc_same_customer'] = __( 'New order for this customer', 'advanced-manual-orders-for-woocommerce' );
-		$actions['amowc_same_products'] = __( 'New order with these products', 'advanced-manual-orders-for-woocommerce' );
+		$actions['amowc_duplicate']     = __( 'Duplicate order', 'business-bloomer-advanced-manual-orders' );
+		$actions['amowc_same_customer'] = __( 'New order for this customer', 'business-bloomer-advanced-manual-orders' );
+		$actions['amowc_same_products'] = __( 'New order with these products', 'business-bloomer-advanced-manual-orders' );
 	}
 	return $actions;
 }
@@ -358,10 +358,10 @@ function amowc_currency_selector( $id, $selected ) {
 	?>
 	<p class="amowc-currency amowc-advanced" <?php echo $on ? '' : 'hidden'; ?>>
 		<label for="<?php echo esc_attr( $id ); ?>">
-			<?php esc_html_e( 'Currency', 'advanced-manual-orders-for-woocommerce' ); ?>
-			<?php amowc_help_tip( __( 'The currency of this order. Your store currencies come first. Prices you type are not converted.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
+			<?php esc_html_e( 'Currency', 'business-bloomer-advanced-manual-orders' ); ?>
+			<?php amowc_help_tip( __( 'The currency of this order. Your store currencies come first. Prices you type are not converted.', 'business-bloomer-advanced-manual-orders' ) ); ?>
 			<?php if ( $can_reset ) : ?>
-				<a href="#" class="amowc-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
+				<a href="#" class="amowc-currency-toggle" data-on="0"><?php esc_html_e( 'Remove currency selector', 'business-bloomer-advanced-manual-orders' ); ?></a>
 			<?php endif; ?>
 		</label>
 		<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" class="wc-enhanced-select" style="width:100%">
@@ -370,8 +370,8 @@ function amowc_currency_selector( $id, $selected ) {
 	</p>
 	<?php if ( $can_reset ) : ?>
 		<p class="amowc-currency-off" <?php echo $on ? 'hidden' : ''; ?>>
-			<a href="#" class="amowc-currency-toggle amowc-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'advanced-manual-orders-for-woocommerce' ); ?></a>
-			<?php amowc_help_tip( __( 'Adds a currency dropdown to new and unpaid orders, so you can take an order in another currency. You can remove it again at any time.', 'advanced-manual-orders-for-woocommerce' ) ); ?>
+			<a href="#" class="amowc-currency-toggle amowc-link" data-on="1"><?php esc_html_e( 'Enable currency selector', 'business-bloomer-advanced-manual-orders' ); ?></a>
+			<?php amowc_help_tip( __( 'Adds a currency dropdown to new and unpaid orders, so you can take an order in another currency. You can remove it again at any time.', 'business-bloomer-advanced-manual-orders' ) ); ?>
 		</p>
 	<?php endif; ?>
 	<?php
@@ -425,7 +425,7 @@ function amowc_ajax_set_currency() {
 
 		if ( 'auto-draft' !== $order->get_status() ) {
 			/* translators: 1: old currency code, 2: new currency code */
-			$order->add_order_note( sprintf( __( 'Currency changed from %1$s to %2$s. Item prices were not converted.', 'advanced-manual-orders-for-woocommerce' ), $old, $currency ) );
+			$order->add_order_note( sprintf( __( 'Currency changed from %1$s to %2$s. Item prices were not converted.', 'business-bloomer-advanced-manual-orders' ), $old, $currency ) );
 		}
 	}
 
@@ -480,7 +480,7 @@ function amowc_ajax_search_orders() {
 	foreach ( $orders as $order ) {
 		$name = trim( $order->get_formatted_billing_full_name() );
 		if ( ! $name ) {
-			$name = $order->get_billing_email() ? $order->get_billing_email() : __( 'Guest', 'advanced-manual-orders-for-woocommerce' );
+			$name = $order->get_billing_email() ? $order->get_billing_email() : __( 'Guest', 'business-bloomer-advanced-manual-orders' );
 		}
 		$count = $order->get_item_count();
 
@@ -492,7 +492,7 @@ function amowc_ajax_search_orders() {
 					'#' . $order->get_order_number(),
 					$name,
 					/* translators: %d: number of items */
-					sprintf( _n( '%d item', '%d items', $count, 'advanced-manual-orders-for-woocommerce' ), $count ),
+					sprintf( _n( '%d item', '%d items', $count, 'business-bloomer-advanced-manual-orders' ), $count ),
 					html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, 'UTF-8' ),
 					$order->get_date_created() ? wc_format_datetime( $order->get_date_created() ) : '',
 				)
@@ -514,10 +514,10 @@ function amowc_list_duplicate_button( $actions, $order ) {
 	if ( $order instanceof WC_Order && 'shop_order' === $order->get_type() && current_user_can( 'edit_shop_orders' ) ) {
 		$actions['amowc_duplicate'] = array(
 			'url'    => wp_nonce_url( admin_url( 'admin-post.php?action=amowc_duplicate&order_id=' . $order->get_id() ), 'amowc_duplicate_' . $order->get_id() ),
-			'name'   => __( 'Duplicate', 'advanced-manual-orders-for-woocommerce' ),
+			'name'   => __( 'Duplicate', 'business-bloomer-advanced-manual-orders' ),
 			'title'  => sprintf(
 				/* translators: %s: order status, e.g. Pending payment */
-				__( 'Duplicate this order: a new "%s" order with the same customer, items, shipping and coupons. Payment details and invoices are not copied, and no emails are sent.', 'advanced-manual-orders-for-woocommerce' ),
+				__( 'Duplicate this order: a new "%s" order with the same customer, items, shipping and coupons. Payment details and invoices are not copied, and no emails are sent.', 'business-bloomer-advanced-manual-orders' ),
 				wc_get_order_status_name( amowc_duplicate_status() )
 			),
 			'action' => 'amowc-duplicate',
@@ -537,7 +537,7 @@ function amowc_handle_duplicate_link() {
 	$order = wc_get_order( $order_id );
 
 	if ( ! $order || 'shop_order' !== $order->get_type() || ! current_user_can( 'edit_shop_orders' ) ) {
-		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'advanced-manual-orders-for-woocommerce' ) );
+		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'business-bloomer-advanced-manual-orders' ) );
 	}
 
 	$copy = amowc_create_draft(

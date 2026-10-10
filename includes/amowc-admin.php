@@ -60,27 +60,27 @@ function amowc_enqueue() {
 			'autoTotals' => amowc_enabled( 'auto_totals' ),
 			'shipping'   => wc_shipping_enabled(),
 			'i18n'       => array(
-				'shippingTitle' => __( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ),
+				'shippingTitle' => __( 'Calculate shipping', 'business-bloomer-advanced-manual-orders' ),
 				/* translators: %d: package number */
-				'package'       => __( 'Package %d', 'advanced-manual-orders-for-woocommerce' ),
-				'add'           => __( 'Add to order', 'advanced-manual-orders-for-woocommerce' ),
-				'cancel'        => __( 'Cancel', 'advanced-manual-orders-for-woocommerce' ),
-				'replaceNote'   => __( 'Replaces the shipping already on this order.', 'advanced-manual-orders-for-woocommerce' ),
-				'error'         => __( 'Something went wrong. Please try again.', 'advanced-manual-orders-for-woocommerce' ),
-				'copyLink'      => __( 'Copy Order Pay link', 'advanced-manual-orders-for-woocommerce' ),
-				'copied'        => __( 'Link copied', 'advanced-manual-orders-for-woocommerce' ),
-				'addProduct'    => __( 'Add a product: type a name or SKU', 'advanced-manual-orders-for-woocommerce' ),
-				'searching'     => __( 'Searching…', 'advanced-manual-orders-for-woocommerce' ),
-				'noResults'     => __( 'No products found', 'advanced-manual-orders-for-woocommerce' ),
-				'tipAddItems'   => __( 'Tip: the "Add a product" box above adds products in one click, every variation listed.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipRecalc'     => __( 'Taxes and totals already update on their own when items or the address change.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipShipping'   => __( 'Tip: "Calculate shipping" adds real rates from your shipping zones, with tax.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipCalcShip'   => __( 'Real rates from your shipping zones for these items and this address, the same ones checkout shows.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipCoupon'     => __( 'Totals and taxes update on their own after the coupon is applied.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipProduct'    => __( 'Type a name or SKU, or open the list to see your best sellers. Every variation is listed on its own, and one click adds it. Pick the same product again to raise its quantity.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipActions'    => __( 'New in this list: Duplicate order, New order for this customer, New order with these products.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipFee'        => __( 'Tip: type an amount, or a percentage like 10% of the order. Totals and taxes update on their own.', 'advanced-manual-orders-for-woocommerce' ),
-				'tipTax'        => __( 'Not needed for normal taxes: they come from your tax settings and the customer address. Use it only for an extra rate on this order.', 'advanced-manual-orders-for-woocommerce' ),
+				'package'       => __( 'Package %d', 'business-bloomer-advanced-manual-orders' ),
+				'add'           => __( 'Add to order', 'business-bloomer-advanced-manual-orders' ),
+				'cancel'        => __( 'Cancel', 'business-bloomer-advanced-manual-orders' ),
+				'replaceNote'   => __( 'Replaces the shipping already on this order.', 'business-bloomer-advanced-manual-orders' ),
+				'error'         => __( 'Something went wrong. Please try again.', 'business-bloomer-advanced-manual-orders' ),
+				'copyLink'      => __( 'Copy Order Pay link', 'business-bloomer-advanced-manual-orders' ),
+				'copied'        => __( 'Link copied', 'business-bloomer-advanced-manual-orders' ),
+				'addProduct'    => __( 'Add a product: type a name or SKU', 'business-bloomer-advanced-manual-orders' ),
+				'searching'     => __( 'Searching…', 'business-bloomer-advanced-manual-orders' ),
+				'noResults'     => __( 'No products found', 'business-bloomer-advanced-manual-orders' ),
+				'tipAddItems'   => __( 'Tip: the "Add a product" box above adds products in one click, every variation listed.', 'business-bloomer-advanced-manual-orders' ),
+				'tipRecalc'     => __( 'Taxes and totals already update on their own when items or the address change.', 'business-bloomer-advanced-manual-orders' ),
+				'tipShipping'   => __( 'Tip: "Calculate shipping" adds real rates from your shipping zones, with tax.', 'business-bloomer-advanced-manual-orders' ),
+				'tipCalcShip'   => __( 'Real rates from your shipping zones for these items and this address, the same ones checkout shows.', 'business-bloomer-advanced-manual-orders' ),
+				'tipCoupon'     => __( 'Totals and taxes update on their own after the coupon is applied.', 'business-bloomer-advanced-manual-orders' ),
+				'tipProduct'    => __( 'Type a name or SKU, or open the list to see your best sellers. Every variation is listed on its own, and one click adds it. Pick the same product again to raise its quantity.', 'business-bloomer-advanced-manual-orders' ),
+				'tipActions'    => __( 'New in this list: Duplicate order, New order for this customer, New order with these products.', 'business-bloomer-advanced-manual-orders' ),
+				'tipFee'        => __( 'Tip: type an amount, or a percentage like 10% of the order. Totals and taxes update on their own.', 'business-bloomer-advanced-manual-orders' ),
+				'tipTax'        => __( 'Not needed for normal taxes: they come from your tax settings and the customer address. Use it only for an extra rate on this order.', 'business-bloomer-advanced-manual-orders' ),
 			),
 		)
 	);
@@ -99,36 +99,36 @@ function amowc_new_order_form() {
 	<div id="amowc-new-order" class="amowc-modal" hidden>
 		<div class="amowc-modal__box" role="dialog" aria-modal="true" aria-labelledby="amowc-new-order-title">
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<h2 id="amowc-new-order-title"><?php esc_html_e( 'New order', 'advanced-manual-orders-for-woocommerce' ); ?> <span class="amowc-badge"><?php esc_html_e( 'Advanced', 'advanced-manual-orders-for-woocommerce' ); ?></span></h2>
+				<h2 id="amowc-new-order-title"><?php esc_html_e( 'New order', 'business-bloomer-advanced-manual-orders' ); ?> <span class="amowc-badge"><?php esc_html_e( 'Advanced', 'business-bloomer-advanced-manual-orders' ); ?></span></h2>
 				<input type="hidden" name="action" value="amowc_new_order">
 				<?php wp_nonce_field( 'amowc_new_order' ); ?>
 
 				<p>
-					<label for="amowc_copy_from"><?php esc_html_e( 'Start from a past order (optional)', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-					<select id="amowc_copy_from" name="amowc_copy_from" style="width:100%" data-placeholder="<?php esc_attr_e( 'Latest orders, or search by name, email or number', 'advanced-manual-orders-for-woocommerce' ); ?>"></select>
+					<label for="amowc_copy_from"><?php esc_html_e( 'Start from a past order (optional)', 'business-bloomer-advanced-manual-orders' ); ?></label>
+					<select id="amowc_copy_from" name="amowc_copy_from" style="width:100%" data-placeholder="<?php esc_attr_e( 'Latest orders, or search by name, email or number', 'business-bloomer-advanced-manual-orders' ); ?>"></select>
 				</p>
 
 				<fieldset class="amowc-copy" hidden>
-					<label><input type="radio" name="amowc_copy" value="all" checked> <?php esc_html_e( 'Repeat the whole order', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-					<span class="description"><?php esc_html_e( 'Same customer, addresses, currency, products, prices, shipping, fees and coupons. Payment, invoices and order notes are not copied.', 'advanced-manual-orders-for-woocommerce' ); ?></span>
-					<label><input type="radio" name="amowc_copy" value="products"> <?php esc_html_e( 'Copy the products only', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-					<span class="description"><?php esc_html_e( 'Same products and quantities at today\'s prices, for the customer below.', 'advanced-manual-orders-for-woocommerce' ); ?></span>
+					<label><input type="radio" name="amowc_copy" value="all" checked> <?php esc_html_e( 'Repeat the whole order', 'business-bloomer-advanced-manual-orders' ); ?></label>
+					<span class="description"><?php esc_html_e( 'Same customer, addresses, currency, products, prices, shipping, fees and coupons. Payment, invoices and order notes are not copied.', 'business-bloomer-advanced-manual-orders' ); ?></span>
+					<label><input type="radio" name="amowc_copy" value="products"> <?php esc_html_e( 'Copy the products only', 'business-bloomer-advanced-manual-orders' ); ?></label>
+					<span class="description"><?php esc_html_e( 'Same products and quantities at today\'s prices, for the customer below.', 'business-bloomer-advanced-manual-orders' ); ?></span>
 				</fieldset>
 
 				<div class="amowc-new-fields">
 					<p>
-						<label for="amowc_customer"><?php esc_html_e( 'Customer', 'advanced-manual-orders-for-woocommerce' ); ?></label>
-						<select id="amowc_customer" name="amowc_customer" class="wc-customer-search" data-placeholder="<?php esc_attr_e( 'Guest', 'advanced-manual-orders-for-woocommerce' ); ?>" data-allow_clear="true" style="width:100%"></select>
-						<span class="description"><?php esc_html_e( 'Their saved billing and shipping addresses are filled in.', 'advanced-manual-orders-for-woocommerce' ); ?></span>
+						<label for="amowc_customer"><?php esc_html_e( 'Customer', 'business-bloomer-advanced-manual-orders' ); ?></label>
+						<select id="amowc_customer" name="amowc_customer" class="wc-customer-search" data-placeholder="<?php esc_attr_e( 'Guest', 'business-bloomer-advanced-manual-orders' ); ?>" data-allow_clear="true" style="width:100%"></select>
+						<span class="description"><?php esc_html_e( 'Their saved billing and shipping addresses are filled in.', 'business-bloomer-advanced-manual-orders' ); ?></span>
 					</p>
 
 					<?php amowc_currency_selector( 'amowc_new_currency', get_woocommerce_currency() ); ?>
 				</div>
 
 				<div class="amowc-modal__actions">
-					<a href="#" class="amowc-skip"><?php esc_html_e( 'Skip, open an empty order', 'advanced-manual-orders-for-woocommerce' ); ?></a>
-					<button type="button" class="button amowc-close"><?php esc_html_e( 'Cancel', 'advanced-manual-orders-for-woocommerce' ); ?></button>
-					<button type="submit" class="button button-primary"><?php esc_html_e( 'Start order', 'advanced-manual-orders-for-woocommerce' ); ?></button>
+					<a href="#" class="amowc-skip"><?php esc_html_e( 'Skip, open an empty order', 'business-bloomer-advanced-manual-orders' ); ?></a>
+					<button type="button" class="button amowc-close"><?php esc_html_e( 'Cancel', 'business-bloomer-advanced-manual-orders' ); ?></button>
+					<button type="submit" class="button button-primary"><?php esc_html_e( 'Start order', 'business-bloomer-advanced-manual-orders' ); ?></button>
 				</div>
 			</form>
 		</div>

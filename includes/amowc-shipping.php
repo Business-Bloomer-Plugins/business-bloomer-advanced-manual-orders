@@ -22,7 +22,7 @@ function amowc_shipping_button( $order ) {
 	if ( ! wc_shipping_enabled() || ! $order->is_editable() ) {
 		return;
 	}
-	echo '<button type="button" class="button amowc-calc-shipping">' . esc_html__( 'Calculate shipping', 'advanced-manual-orders-for-woocommerce' ) . '</button>';
+	echo '<button type="button" class="button amowc-calc-shipping">' . esc_html__( 'Calculate shipping', 'business-bloomer-advanced-manual-orders' ) . '</button>';
 }
 
 /**
@@ -129,7 +129,7 @@ function amowc_shipping_request() {
 	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
 
 	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	$destination = array();
@@ -138,7 +138,7 @@ function amowc_shipping_request() {
 	}
 
 	if ( ! $destination['country'] ) {
-		wp_send_json_error( array( 'message' => __( 'Enter the shipping or billing country first.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Enter the shipping or billing country first.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	return array( $order, $destination );
@@ -168,7 +168,7 @@ function amowc_ajax_shipping_rates() {
 	}
 
 	if ( ! $packages ) {
-		wp_send_json_error( array( 'message' => __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	wp_send_json_success( array( 'packages' => $packages ) );
@@ -192,7 +192,7 @@ function amowc_ajax_add_shipping() {
 	}
 
 	if ( ! $added ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a shipping method.', 'advanced-manual-orders-for-woocommerce' ) ) );
+		wp_send_json_error( array( 'message' => __( 'Pick a shipping method.', 'business-bloomer-advanced-manual-orders' ) ) );
 	}
 
 	foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {

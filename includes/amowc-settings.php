@@ -54,7 +54,7 @@ function amowc_settings_url() {
  * @return array
  */
 function amowc_add_section( $sections ) {
-	$sections['amowc'] = __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' );
+	$sections['amowc'] = __( 'Advanced Manual Orders', 'business-bloomer-advanced-manual-orders' );
 	return $sections;
 }
 
@@ -72,21 +72,21 @@ function amowc_section_settings( $settings, $section ) {
 
 	$fields = array(
 		array(
-			'title' => __( 'Advanced Manual Orders', 'advanced-manual-orders-for-woocommerce' ),
+			'title' => __( 'Advanced Manual Orders', 'business-bloomer-advanced-manual-orders' ),
 			'type'  => 'title',
-			'desc'  => __( 'How orders you create in the admin behave.', 'advanced-manual-orders-for-woocommerce' ),
+			'desc'  => __( 'How orders you create in the admin behave.', 'business-bloomer-advanced-manual-orders' ),
 			'id'    => 'amowc_options',
 		),
 		array(
-			'title'   => __( 'New order form', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'    => __( 'Ask for customer, currency and products to copy when you click "Add order"', 'advanced-manual-orders-for-woocommerce' ),
+			'title'   => __( 'New order form', 'business-bloomer-advanced-manual-orders' ),
+			'desc'    => __( 'Ask for customer, currency and products to copy when you click "Add order"', 'business-bloomer-advanced-manual-orders' ),
 			'id'      => 'amowc_popup',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
-			'title'    => __( 'Duplicate order status', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'     => __( 'Status of the copy made by "Duplicate". No emails are sent for it. On hold, Processing and Completed reduce stock, as for any order.', 'advanced-manual-orders-for-woocommerce' ),
+			'title'    => __( 'Duplicate order status', 'business-bloomer-advanced-manual-orders' ),
+			'desc'     => __( 'Status of the copy made by "Duplicate". No emails are sent for it. On hold, Processing and Completed reduce stock, as for any order.', 'business-bloomer-advanced-manual-orders' ),
 			'id'       => 'amowc_dup_status',
 			'type'     => 'select',
 			'class'    => 'wc-enhanced-select',
@@ -95,22 +95,22 @@ function amowc_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
-			'title'   => __( 'Taxes and totals', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'advanced-manual-orders-for-woocommerce' ),
+			'title'   => __( 'Taxes and totals', 'business-bloomer-advanced-manual-orders' ),
+			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'business-bloomer-advanced-manual-orders' ),
 			'id'      => 'amowc_auto_totals',
 			'type'    => 'checkbox',
 			'default' => 'yes',
 		),
 		array(
-			'title'   => __( 'Currency selector', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'    => __( 'Pick a currency on the "Add order" form and on unpaid orders', 'advanced-manual-orders-for-woocommerce' ),
+			'title'   => __( 'Currency selector', 'business-bloomer-advanced-manual-orders' ),
+			'desc'    => __( 'Pick a currency on the "Add order" form and on unpaid orders', 'business-bloomer-advanced-manual-orders' ),
 			'id'      => 'amowc_currency',
 			'type'    => 'checkbox',
 			'default' => 'no',
 		),
 		array(
-			'title'    => __( 'Currencies', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'advanced-manual-orders-for-woocommerce' ),
+			'title'    => __( 'Currencies', 'business-bloomer-advanced-manual-orders' ),
+			'desc'     => __( 'Extra currencies to show at the top of the currency list. Currencies from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster are added on their own.', 'business-bloomer-advanced-manual-orders' ),
 			'id'       => 'amowc_currencies',
 			'type'     => 'multiselect',
 			'class'    => 'wc-enhanced-select',
@@ -119,12 +119,12 @@ function amowc_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
-			'title'    => __( 'Payment link', 'advanced-manual-orders-for-woocommerce' ),
-			'desc'     => __( 'Customers can pay without logging in', 'advanced-manual-orders-for-woocommerce' ),
+			'title'    => __( 'Payment link', 'business-bloomer-advanced-manual-orders' ),
+			'desc'     => __( 'Customers can pay without logging in', 'business-bloomer-advanced-manual-orders' ),
 			'id'       => 'amowc_guest_pay',
 			'type'     => 'checkbox',
 			'default'  => 'yes',
-			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'advanced-manual-orders-for-woocommerce' ),
+			'desc_tip' => __( 'Only for orders created in the admin. Whoever has the link can see the order and pay it, the same as a guest order.', 'business-bloomer-advanced-manual-orders' ),
 		),
 		array(
 			'type' => 'sectionend',
@@ -140,12 +140,12 @@ function amowc_section_settings( $settings, $section ) {
 			0,
 			array(
 				array(
-					'title'    => __( 'Same price in every country', 'advanced-manual-orders-for-woocommerce' ),
-					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'advanced-manual-orders-for-woocommerce' ),
+					'title'    => __( 'Same price in every country', 'business-bloomer-advanced-manual-orders' ),
+					'desc'     => __( 'Fix product prices on manual orders when your store charges the same price, tax included, in every country', 'business-bloomer-advanced-manual-orders' ),
 					'id'       => 'amowc_same_price_fix',
 					'type'     => 'checkbox',
 					'default'  => 'yes',
-					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'advanced-manual-orders-for-woocommerce' ),
+					'desc_tip' => __( 'For stores that set woocommerce_adjust_non_base_location_prices to false. Since WooCommerce 10.5, products added to a manual order are priced for the wrong country. WooCommerce fixes this in version 11.3, then this setting goes away.', 'business-bloomer-advanced-manual-orders' ),
 				),
 			)
 		);
@@ -253,8 +253,8 @@ function amowc_currency_options( $selected ) {
 	$all    = amowc_currencies();
 	$store  = array_intersect_key( $all, array_flip( amowc_store_currencies() ) );
 	$groups = array(
-		__( 'Store currencies', 'advanced-manual-orders-for-woocommerce' ) => $store,
-		__( 'All currencies', 'advanced-manual-orders-for-woocommerce' )   => array_diff_key( $all, $store ),
+		__( 'Store currencies', 'business-bloomer-advanced-manual-orders' ) => $store,
+		__( 'All currencies', 'business-bloomer-advanced-manual-orders' )   => array_diff_key( $all, $store ),
 	);
 
 	foreach ( $groups as $label => $currencies ) {
