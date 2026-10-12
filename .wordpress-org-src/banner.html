@@ -5,14 +5,11 @@
 html,body{margin:0;padding:0;background:var(--night)}
 .banner{container-type:inline-size;width:var(--w,772px);aspect-ratio:772/250;position:relative;overflow:hidden;background:var(--night);color:#fff;font-family:var(--display)}
 .glow{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(109,40,217,.55),rgba(109,40,217,0) 65%)}
-.brand{font-size:1.75cqw;font-weight:700;letter-spacing:.01em;color:#cfc8e6;margin-bottom:0.9cqw}
-.eyebrow{font-family:var(--mono);font-size:1.55cqw;letter-spacing:.08em;text-transform:uppercase;color:var(--lilac);margin-top:1cqw}
-.name{font-size:4.8cqw;line-height:1.02;font-weight:800;letter-spacing:-.02em}
+.name{font-size:4.3cqw;line-height:1.04;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
 .name span{color:var(--lilac)}
 .sub{font-size:1.85cqw;margin-top:2cqw;line-height:1.35;color:#cfc8e6}
 .sub .hl{color:#fff;font-weight:700;white-space:nowrap}
 .in{position:absolute;inset:0;display:grid;grid-template-columns:1fr 52cqw;gap:3.5cqw;align-items:center;padding:0 3.6cqw 0 5.5cqw}
-.in>div:first-child{transform:translateY(0.6cqw)}
 .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:1cqw .6cqw}
 .card{border:.13cqw solid rgba(196,181,253,.22);border-radius:1cqw;display:grid;align-content:center;min-width:0;padding:1.2cqw 1.6cqw;gap:.8cqw;background:#231b45;box-shadow:0 1.2cqw 2.8cqw rgba(0,0,0,.5);position:relative}
 .k{font-family:var(--mono);font-size:1.3cqw;letter-spacing:.08em;text-transform:uppercase;color:var(--lilac)}
@@ -41,10 +38,8 @@ html,body{margin:0;padding:0;background:var(--night)}
   <div class="glow" style="right:0;top:-22cqw;width:60cqw;height:60cqw"></div>
   <div class="in">
     <div>
-      <div class="brand">Business Bloomer</div>
-      <div class="name">Advanced<br><span>Manual Orders</span></div>
-      <div class="eyebrow">for WooCommerce</div>
-      <div class="sub">Create manual orders <b class="hl">up to 90% faster</b>, with the right products, currency, shipping rates and taxes.</div>
+      <div class="name">Advanced<br><span>Manual Orders</span><br>for WooCommerce</div>
+      <div class="sub">Create manual orders <b class="hl">up to 90% faster</b>, with the right products, currency, shipping rates and taxes. Or let your AI agent do it.</div>
     </div>
     <div class="grid">
       <div class="card t1"><div class="k">Add a product</div>
