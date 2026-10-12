@@ -93,31 +93,6 @@ function amowc_pay_page_currency() {
 }
 
 /**
- * "Email Order Pay link" button.
- *
- * @param WP_REST_Request $request Request.
- * @return array|WP_Error
- */
-function amowc_rest_email_pay_link( $request ) {
-	$order = amowc_rest_order( $request, false );
-
-	if ( is_wp_error( $order ) ) {
-		return $order;
-	}
-
-	$sent = amowc_email_pay_link( $order );
-
-	if ( is_wp_error( $sent ) ) {
-		return $sent;
-	}
-
-	return array(
-		'email'      => $order->get_billing_email(),
-		'notes_html' => amowc_order_notes_html( $order->get_id() ),
-	);
-}
-
-/**
  * Emails the payment link to the order's billing email: WooCommerce's own customer invoice
  * email, exactly like "Order actions > Send order details to customer".
  *

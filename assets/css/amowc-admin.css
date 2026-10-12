@@ -201,6 +201,7 @@
 
 .amowc-help-tip {
 	display: inline-block;
+	margin-left: 4px;
 	cursor: help;
 }
 
@@ -288,9 +289,21 @@ select[name="wc_order_action"] option[value^="amowc_"] {
 }
 
 /* Same look as the other plugin links, right-aligned under the status. */
+#order_data .wc-order-status .amowc-pay-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 4px 14px;
+	margin-top: 6px;
+}
+
+#order_data .wc-order-status .amowc-pay-label {
+	color: #50575e;
+}
+
 #order_data .wc-order-status .amowc-pay-action {
-	display: block;
-	margin: 6px 0 0 auto;
+	margin: 0;
+	padding: 0;
 	font: inherit;
 	font-weight: 600;
 	color: var(--amowc-accent);

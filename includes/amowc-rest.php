@@ -97,10 +97,6 @@ function amowc_register_routes() {
 				),
 			),
 		),
-		'/orders/(?P<id>\d+)/email-pay-link' => array(
-			'methods'  => WP_REST_Server::CREATABLE,
-			'callback' => 'amowc_rest_email_pay_link',
-		),
 		'/settings/currency-selector'        => array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'amowc_rest_toggle_currency',

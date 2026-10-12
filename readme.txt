@@ -26,7 +26,7 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 * **Tips where you need them:** WooCommerce's own buttons (Add item, Add fee, Add tax, Recalculate) get a short tip on what the plugin now does for you, like percentage fees and automatic taxes.
 * **New order for this customer:** a fresh order with the same customer and addresses.
 * **New order with these products:** the same products and quantities at today's prices.
-* **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. Under the order status, "Copy Order Pay link" copies it and "Email Order Pay link" sends it to the customer with WooCommerce's own invoice email.
+* **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. Under the order status, "Order Pay link: Copy" copies it and "Save & email" saves your changes and sends it to the customer with WooCommerce's own invoice email.
 * **Ready for AI agents:** AI assistants connected to your store (through the Abilities API and MCP) can find a customer, create the order with shipping and taxes, email the payment link, check shipping rates and duplicate orders. "Make Mario an order for 2 red hoodies with the cheapest shipping and send him the pay link" just works. Only users who can edit orders can use them, and customer names, emails, phones and addresses are never sent to the AI service.
 
 New orders open as drafts with WooCommerce's own "Create" button, exactly like a normal new order. Drafts you never create are cleaned up by WooCommerce after a few days.
@@ -63,9 +63,9 @@ If you set `woocommerce_adjust_non_base_location_prices` to false, WooCommerce 1
 
 Everything that belongs to the original's payment and processing: payment method, transaction ID, paid and completed dates, stock changes, order notes, and hidden data added by other plugins, such as invoice numbers, license keys and tracking numbers. Visible custom fields and line item details, like variation attributes, product options or an engraving text, are copied. Developers can change this with the `amowc_copy_meta` filter.
 
-= What email does "Email Order Pay link" send? =
+= What email does "Save & email" (Order Pay link) send? =
 
-WooCommerce's own "Order details" customer invoice email, with your email template and settings, the same one as Order actions > Send order details to customer. It goes to the billing email saved on the order, and a note is added to the order.
+WooCommerce's own "Order details" customer invoice email, with your email template and settings, the same one as Order actions > Send order details to customer. The order is saved first, so the email has your latest changes, then it goes to the billing email and a note is added to the order.
 
 = Which abilities does it add for AI agents? =
 

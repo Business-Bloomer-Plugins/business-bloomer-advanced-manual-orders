@@ -47,15 +47,6 @@ function amowc_enqueue() {
 		return;
 	}
 
-	// The billing email saved on the order being edited, for the "Email Order Pay link" prompt.
-	$email = '';
-	if ( 'edit' === $screen ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reads which order is open.
-		$order_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0 );
-		$order    = $order_id ? wc_get_order( $order_id ) : null;
-		$email    = $order ? $order->get_billing_email() : '';
-	}
-
 	wp_enqueue_style( 'amowc-admin', AMOWC_PLUGIN_URL . 'assets/css/amowc-admin.css', array(), AMOWC_VERSION );
 	wp_enqueue_script( 'amowc-admin', AMOWC_PLUGIN_URL . 'assets/js/amowc-admin.js', array( 'jquery', 'wc-enhanced-select' ), AMOWC_VERSION, true );
 	wp_localize_script(
@@ -68,7 +59,6 @@ function amowc_enqueue() {
 			'popup'      => amowc_enabled( 'popup' ),
 			'autoTotals' => amowc_enabled( 'auto_totals' ),
 			'shipping'   => wc_shipping_enabled(),
-			'email'      => $email,
 			'i18n'       => array(
 				'shippingTitle' => __( 'Calculate shipping', 'business-bloomer-advanced-manual-orders' ),
 				/* translators: %d: package number */
@@ -77,14 +67,14 @@ function amowc_enqueue() {
 				'cancel'        => __( 'Cancel', 'business-bloomer-advanced-manual-orders' ),
 				'replaceNote'   => __( 'Replaces the shipping already on this order.', 'business-bloomer-advanced-manual-orders' ),
 				'error'         => __( 'Something went wrong. Please try again.', 'business-bloomer-advanced-manual-orders' ),
-				'copyLink'      => __( 'Copy Order Pay link', 'business-bloomer-advanced-manual-orders' ),
-				'copied'        => __( 'Link copied', 'business-bloomer-advanced-manual-orders' ),
-				'emailLink'     => __( 'Email Order Pay link', 'business-bloomer-advanced-manual-orders' ),
+				'payLink'       => __( 'Order Pay link:', 'business-bloomer-advanced-manual-orders' ),
+				'copyLink'      => __( 'Copy', 'business-bloomer-advanced-manual-orders' ),
+				'copied'        => __( 'Copied', 'business-bloomer-advanced-manual-orders' ),
+				'emailLink'     => __( 'Save & email', 'business-bloomer-advanced-manual-orders' ),
 				/* translators: %s: customer email address */
-				'emailConfirm'  => __( 'Email the payment link to %s now?', 'business-bloomer-advanced-manual-orders' ),
-				/* translators: %s: customer email address */
-				'emailed'       => __( 'Sent to %s', 'business-bloomer-advanced-manual-orders' ),
-				'tipEmailLink'  => __( 'Sends WooCommerce\'s customer invoice email, with the payment link, to the billing email saved on this order. Same as Order actions > Send order details to customer.', 'business-bloomer-advanced-manual-orders' ),
+				'emailConfirm'  => __( 'Save the order and email the payment link to %s?', 'business-bloomer-advanced-manual-orders' ),
+				'noEmail'       => __( 'Add a billing email address first.', 'business-bloomer-advanced-manual-orders' ),
+				'tipEmailLink'  => __( 'Saves your changes first, then sends WooCommerce\'s customer invoice email, with the payment link, to the billing email. Same as Order actions > Send order details to customer.', 'business-bloomer-advanced-manual-orders' ),
 				'findCustomer'  => __( 'Name, email, phone or company', 'business-bloomer-advanced-manual-orders' ),
 				'tipCustomer'   => __( 'Finds registered customers and guests by name, email, phone or company. Picking one fills in their billing and shipping addresses.', 'business-bloomer-advanced-manual-orders' ),
 				'addProduct'    => __( 'Add a product: type a name or SKU', 'business-bloomer-advanced-manual-orders' ),

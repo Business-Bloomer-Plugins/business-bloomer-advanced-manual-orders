@@ -192,7 +192,7 @@ function amowc_handle_new_order_form() {
 		wp_die( esc_html__( 'Sorry, you are not allowed to create orders.', 'business-bloomer-advanced-manual-orders' ) );
 	}
 
-	$currency = isset( $_POST['amowc_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amowc_currency'] ) ) : '';
+	$currency = isset( $_POST['amowc_new_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['amowc_new_currency'] ) ) : '';
 	$source   = ! empty( $_POST['amowc_copy_from'] ) ? wc_get_order( absint( $_POST['amowc_copy_from'] ) ) : null;
 
 	$order = amowc_create_draft(

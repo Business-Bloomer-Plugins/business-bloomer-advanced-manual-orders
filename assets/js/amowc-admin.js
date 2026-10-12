@@ -444,25 +444,24 @@ jQuery( function ( $ ) {
 		}
 
 		var $email = $( '<button type="button" class="button-link amowc-link amowc-pay-action amowc-email-link"></button>' ).text( i18n.emailLink ).attr( 'data-tip', i18n.tipEmailLink );
-		$status.append( $email );
+		$( '<span class="amowc-pay-actions"></span>' ).append( $( '<span class="amowc-pay-label"></span>' ).text( i18n.payLink ), $status.children( '.amowc-copy-link' ), $email ).appendTo( $status );
 		if ( $.fn.tipTip ) {
 			$email.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
 		}
 		$email.on( 'click', function ( e ) {
 			e.preventDefault();
-			if ( amowc.email && ! window.confirm( i18n.emailConfirm.replace( '%s', amowc.email ) ) ) {
+			// The email on screen, which may not be saved yet.
+			var address = $.trim( $( '#_billing_email' ).val() || '' );
+			if ( ! address ) {
+				window.alert( i18n.noEmail );
 				return;
 			}
-			$email.prop( 'disabled', true );
-			api( 'POST', 'orders/' + orderId + '/email-pay-link' ).done( function ( res ) {
-				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.notes_html );
-				$email.text( i18n.emailed.replace( '%s', res.email ) );
-				setTimeout( function () {
-					$email.text( i18n.emailLink );
-				}, 3000 );
-			} ).fail( fail ).always( function () {
-				$email.prop( 'disabled', false );
-			} );
+			if ( ! window.confirm( i18n.emailConfirm.replace( '%s', address ) ) ) {
+				return;
+			}
+			// WooCommerce's own order action: the order is saved first, then the email goes out.
+			$( 'select[name="wc_order_action"]' ).val( 'send_order_details' );
+			$( 'button.save_order' ).first().trigger( 'click' );
 		} );
 	}
 
