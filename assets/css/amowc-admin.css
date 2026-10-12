@@ -174,8 +174,8 @@
 .amowc-link:focus,
 .amowc-currency-toggle:hover,
 .amowc-currency-toggle:focus,
-#order_data .wc-order-status .amowc-copy-link:hover,
-#order_data .wc-order-status .amowc-copy-link:focus {
+#order_data .wc-order-status .amowc-pay-action:hover,
+#order_data .wc-order-status .amowc-pay-action:focus {
 	color: var(--amowc-accent-hover);
 	text-decoration-thickness: 2px;
 }
@@ -288,7 +288,7 @@ select[name="wc_order_action"] option[value^="amowc_"] {
 }
 
 /* Same look as the other plugin links, right-aligned under the status. */
-#order_data .wc-order-status .amowc-copy-link {
+#order_data .wc-order-status .amowc-pay-action {
 	display: block;
 	margin: 6px 0 0 auto;
 	font: inherit;
@@ -297,9 +297,16 @@ select[name="wc_order_action"] option[value^="amowc_"] {
 	text-decoration: underline;
 }
 
+#order_data .wc-order-status .amowc-pay-action:disabled {
+	opacity: 0.6;
+}
 
 #order_data .wc-order-status .amowc-copy-link::before {
 	content: "\f105";
+}
+
+#order_data .wc-order-status .amowc-email-link::before {
+	content: "\f465";
 }
 
 /* Duplicate button in the orders list and the preview. */

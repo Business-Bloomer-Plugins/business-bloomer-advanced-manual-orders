@@ -31,14 +31,34 @@ function amowc_same_price_fix_active() {
 }
 
 /**
+ * The address on screen sent with the plugin's own "Add a product" request.
+ *
+ * @param array|null $location country, state, postcode, city. Null to read it.
+ * @return array
+ */
+function amowc_request_location( $location = null ) {
+	static $saved = array();
+	if ( null !== $location ) {
+		$saved = $location;
+	}
+	return $saved;
+}
+
+/**
  * Tax address for a newly added product: the one on screen, else the one saved on the order.
  *
  * @param WC_Order $order Order.
  * @return array country, state, postcode, city.
  */
 function amowc_tax_location( $order ) {
+	$sent     = amowc_request_location();
 	$location = array();
 	foreach ( array( 'country', 'state', 'postcode', 'city' ) as $key ) {
+		if ( isset( $sent[ $key ] ) ) {
+			$location[ $key ] = wc_strtoupper( $sent[ $key ] );
+			continue;
+		}
+		// WooCommerce's own "Add item(s)" request, which the order screen sends with the address.
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- read during WooCommerce's own nonce-checked AJAX request.
 		$location[ $key ] = isset( $_POST[ $key ] ) && is_string( $_POST[ $key ] ) ? wc_strtoupper( sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) ) : '';
 	}

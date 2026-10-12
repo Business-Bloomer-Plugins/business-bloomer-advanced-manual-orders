@@ -10,8 +10,6 @@
 defined( 'ABSPATH' ) || exit;
 
 add_action( 'woocommerce_order_item_add_action_buttons', 'amowc_shipping_button' );
-add_action( 'wp_ajax_amowc_shipping_rates', 'amowc_ajax_shipping_rates' );
-add_action( 'wp_ajax_amowc_add_shipping', 'amowc_ajax_add_shipping' );
 
 /**
  * "Calculate shipping" button next to "Recalculate", always in view.
@@ -119,36 +117,41 @@ function amowc_get_shipping_rates( $order, $destination ) {
 }
 
 /**
- * Reads the order and the destination posted by the order screen.
+ * The order and the destination sent by the order screen.
  *
- * @return array Order and destination.
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error Order and destination.
  */
-function amowc_shipping_request() {
-	check_ajax_referer( 'amowc_admin', 'security' );
+function amowc_shipping_request( $request ) {
+	$order = amowc_rest_order( $request );
 
-	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
-
-	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'business-bloomer-advanced-manual-orders' ) ) );
+	if ( is_wp_error( $order ) ) {
+		return $order;
 	}
 
-	$destination = array();
-	foreach ( array( 'country', 'state', 'postcode', 'city', 'address_1', 'address_2' ) as $field ) {
-		$destination[ $field ] = isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '';
-	}
+	$destination = amowc_rest_address( $request );
 
 	if ( ! $destination['country'] ) {
-		wp_send_json_error( array( 'message' => __( 'Enter the shipping or billing country first.', 'business-bloomer-advanced-manual-orders' ) ) );
+		return new WP_Error( 'amowc_shipping', __( 'Enter the shipping or billing country first.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 	}
 
 	return array( $order, $destination );
 }
 
 /**
- * Returns the available rates to the order screen.
+ * The available rates, grouped by package.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error
  */
-function amowc_ajax_shipping_rates() {
-	list( $order, $destination ) = amowc_shipping_request();
+function amowc_rest_shipping_rates( $request ) {
+	$found = amowc_shipping_request( $request );
+
+	if ( is_wp_error( $found ) ) {
+		return $found;
+	}
+
+	list( $order, $destination ) = $found;
 
 	$packages = array();
 
@@ -168,31 +171,69 @@ function amowc_ajax_shipping_rates() {
 	}
 
 	if ( ! $packages ) {
-		wp_send_json_error( array( 'message' => __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'business-bloomer-advanced-manual-orders' ) ) );
+		return new WP_Error( 'amowc_shipping', __( 'No shipping method is available for these items and this address. Check your shipping zones, or that the products need shipping.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 	}
 
-	wp_send_json_success( array( 'packages' => $packages ) );
+	return array( 'packages' => $packages );
 }
 
 /**
  * Replaces the order's shipping lines with the chosen rates.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error
  */
-function amowc_ajax_add_shipping() {
-	list( $order, $destination ) = amowc_shipping_request();
+function amowc_rest_add_shipping( $request ) {
+	$found = amowc_shipping_request( $request );
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked in amowc_shipping_request().
-	$chosen = isset( $_POST['rates'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['rates'] ) ) : array();
-	$added  = array();
+	if ( is_wp_error( $found ) ) {
+		return $found;
+	}
+
+	list( $order, $destination ) = $found;
+
+	$chosen = array_map( 'sanitize_text_field', array_map( 'strval', (array) $request['rates'] ) );
+	$added  = amowc_set_shipping( $order, $destination, $chosen );
+
+	if ( is_wp_error( $added ) ) {
+		return $added;
+	}
+
+	return array( 'added' => count( $added ) );
+}
+
+/**
+ * Replaces the order's shipping lines with the chosen rates, and recalculates the totals.
+ *
+ * @param WC_Order     $order       Order.
+ * @param array        $destination country, state, postcode, city, address_1, address_2.
+ * @param array|string $chosen      Package index => rate ID or "cheapest". A string applies to every package.
+ * @return WC_Shipping_Rate[]|WP_Error The rates added.
+ */
+function amowc_set_shipping( $order, $destination, $chosen ) {
+	$added = array();
 
 	foreach ( amowc_get_shipping_rates( $order, $destination ) as $index => $rates ) {
-		$rate_id = isset( $chosen[ $index ] ) ? $chosen[ $index ] : '';
+		$rate_id = is_array( $chosen ) ? ( isset( $chosen[ $index ] ) ? $chosen[ $index ] : '' ) : $chosen;
+		if ( 'cheapest' === $rate_id && $rates ) {
+			// Delivery first: local pickup costs nothing but isn't shipping the order.
+			uasort(
+				$rates,
+				function ( $a, $b ) {
+					$pickup_a = in_array( $a->get_method_id(), array( 'local_pickup', 'pickup_location' ), true );
+					$pickup_b = in_array( $b->get_method_id(), array( 'local_pickup', 'pickup_location' ), true );
+					return array( $pickup_a, (float) $a->get_cost() ) <=> array( $pickup_b, (float) $b->get_cost() );
+				}
+			);
+			$rate_id = key( $rates );
+		}
 		if ( isset( $rates[ $rate_id ] ) ) {
 			$added[] = $rates[ $rate_id ];
 		}
 	}
 
 	if ( ! $added ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a shipping method.', 'business-bloomer-advanced-manual-orders' ) ) );
+		return new WP_Error( 'amowc_shipping', __( 'Pick a shipping method.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 	}
 
 	foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
@@ -207,5 +248,18 @@ function amowc_ajax_add_shipping() {
 
 	$order->calculate_totals( false );
 
-	wp_send_json_success();
+	return $added;
+}
+
+/**
+ * Where an order ships to: the shipping address, or the billing one when it's empty.
+ *
+ * @param WC_Order $order Order.
+ * @return array country, state, postcode, city, address_1, address_2.
+ */
+function amowc_order_destination( $order ) {
+	$type = $order->get_shipping_country() ? 'shipping' : 'billing';
+	$keys = array( 'country', 'state', 'postcode', 'city', 'address_1', 'address_2' );
+
+	return array_intersect_key( $order->get_address( $type ), array_flip( $keys ) );
 }

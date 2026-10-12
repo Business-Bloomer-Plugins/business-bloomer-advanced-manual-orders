@@ -1,6 +1,6 @@
 <?php
 /**
- * Payment link: pay without login, the order's currency on the pay page.
+ * Payment link: pay without login, the order's currency on the pay page, email it to the customer.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -90,4 +90,60 @@ function amowc_pay_page_currency() {
 			return $currency;
 		}
 	);
+}
+
+/**
+ * "Email Order Pay link" button.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error
+ */
+function amowc_rest_email_pay_link( $request ) {
+	$order = amowc_rest_order( $request, false );
+
+	if ( is_wp_error( $order ) ) {
+		return $order;
+	}
+
+	$sent = amowc_email_pay_link( $order );
+
+	if ( is_wp_error( $sent ) ) {
+		return $sent;
+	}
+
+	return array(
+		'email'      => $order->get_billing_email(),
+		'notes_html' => amowc_order_notes_html( $order->get_id() ),
+	);
+}
+
+/**
+ * Emails the payment link to the order's billing email: WooCommerce's own customer invoice
+ * email, exactly like "Order actions > Send order details to customer".
+ *
+ * @param WC_Order $order Order.
+ * @return true|WP_Error
+ */
+function amowc_email_pay_link( $order ) {
+	if ( ! $order->needs_payment() ) {
+		return new WP_Error( 'amowc_pay_link', __( 'This order doesn\'t need payment.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
+	}
+
+	if ( ! is_email( $order->get_billing_email() ) ) {
+		return new WP_Error( 'amowc_pay_link', __( 'Add the customer\'s billing email and update the order first.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
+	}
+
+	// Same hooks and steps as WooCommerce's "Send order details to customer".
+	do_action( 'woocommerce_before_resend_order_emails', $order, 'customer_invoice' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's order action does.
+
+	WC()->payment_gateways();
+	WC()->shipping();
+	WC()->mailer()->customer_invoice( $order );
+
+	/* translators: %s: customer email address */
+	$order->add_order_note( sprintf( __( 'Payment link emailed to %s.', 'business-bloomer-advanced-manual-orders' ), $order->get_billing_email() ), false, true );
+
+	do_action( 'woocommerce_after_resend_order_email', $order, 'customer_invoice' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's order action does.
+
+	return true;
 }
