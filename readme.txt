@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Create manual orders without the pain: pick a currency, get real shipping rates, taxes that update on their own, duplicate and reorder in one click.
+Faster manual orders: find customers by phone or email, real shipping rates, email the payment link, duplicate and reorder in one click.
 
 == Description ==
 
@@ -17,6 +17,7 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 = What it adds =
 
 * **New order form:** click "Add order", on the orders list or on an order. Start from a past order (pick from your latest 10 or search by name, email or number) and repeat it whole, or copy its products for a customer and currency you choose. Saved addresses are filled in.
+* **Find any customer, fast:** search by name, email, phone or company, on the new order form and in the order's Customer field. Registered customers and past guests are both listed, and phone numbers match however they were typed ("0915550101" finds "091-555-0101"). Pick one and their billing and shipping addresses are filled in on the spot. Pick a guest and the order stays a guest order.
 * **Add products in one click:** an "Add a product" box always sits above the order items. Best sellers come first, or type a name or SKU. Each pick adds one, pick it again for more. Every variation is listed on its own, "Any" attributes included, so there's nothing else to pick. Pick a product that's already on the order and its quantity goes up.
 * **Currency per order:** turn on the currency selector (one click, or in the settings) and pick any currency for a manual order, on the form or on the order screen while the order is unpaid. The currencies your store sells in come first, read from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster.
 * **Real shipping rates:** "Calculate shipping", next to Recalculate, shows the rates of your shipping zones for these items and this address, the same ones checkout would show. Pick one and it's added with its tax.
@@ -25,7 +26,7 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 * **Tips where you need them:** WooCommerce's own buttons (Add item, Add fee, Add tax, Recalculate) get a short tip on what the plugin now does for you, like percentage fees and automatic taxes.
 * **New order for this customer:** a fresh order with the same customer and addresses.
 * **New order with these products:** the same products and quantities at today's prices.
-* **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. "Copy Order Pay link" button under the order status.
+* **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. Under the order status, "Copy Order Pay link" copies it and "Email Order Pay link" sends it to the customer with WooCommerce's own invoice email.
 
 New orders open as drafts with WooCommerce's own "Create" button, exactly like a normal new order. Drafts you never create are cleaned up by WooCommerce after a few days.
 
@@ -60,6 +61,10 @@ If you set `woocommerce_adjust_non_base_location_prices` to false, WooCommerce 1
 = What does "Repeat the whole order" leave out? =
 
 Everything that belongs to the original's payment and processing: payment method, transaction ID, paid and completed dates, stock changes, order notes, and hidden data added by other plugins, such as invoice numbers, license keys and tracking numbers. Visible custom fields and line item details, like variation attributes, product options or an engraving text, are copied. Developers can change this with the `amowc_copy_meta` filter.
+
+= What email does "Email Order Pay link" send? =
+
+WooCommerce's own "Order details" customer invoice email, with your email template and settings, the same one as Order actions > Send order details to customer. It goes to the billing email saved on the order, and a note is added to the order.
 
 = Does it work with HPOS? =
 

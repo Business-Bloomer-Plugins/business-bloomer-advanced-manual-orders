@@ -13,9 +13,6 @@ add_action( 'woocommerce_order_action_amowc_same_products', 'amowc_action_same_p
 add_filter( 'redirect_post_location', 'amowc_redirect_to_new_draft' );
 add_filter( 'woocommerce_redirect_order_location', 'amowc_redirect_to_new_draft' );
 add_action( 'woocommerce_admin_order_data_after_order_details', 'amowc_currency_field' );
-add_action( 'wp_ajax_amowc_set_currency', 'amowc_ajax_set_currency' );
-add_action( 'wp_ajax_amowc_search_orders', 'amowc_ajax_search_orders' );
-add_action( 'wp_ajax_amowc_toggle_currency', 'amowc_ajax_toggle_currency' );
 add_action( 'admin_post_amowc_duplicate', 'amowc_handle_duplicate_link' );
 add_filter( 'woocommerce_admin_order_actions', 'amowc_list_duplicate_button', 10, 2 );
 add_filter( 'woocommerce_admin_order_preview_actions', 'amowc_list_duplicate_button', 10, 2 );
@@ -26,7 +23,7 @@ add_filter( 'default_hidden_columns', 'amowc_show_actions_column', 20, 2 );
  * "Add order": it shows the "Create" button and is removed after a few days if never created.
  *
  * @param array $args {
- *     @type int           $customer_id Customer to assign, with their saved addresses.
+ *     @type string        $customer    Customer to assign: a user ID, or "o:ID" for a guest from that order.
  *     @type string        $currency    Order currency.
  *     @type WC_Order|null $source      Order to copy from.
  *     @type string        $copy        What to copy from $source: all, customer, products.
@@ -38,11 +35,11 @@ function amowc_create_draft( $args ) {
 	$args = wp_parse_args(
 		$args,
 		array(
-			'customer_id' => 0,
-			'currency'    => '',
-			'source'      => null,
-			'copy'        => '',
-			'status'      => 'auto-draft',
+			'customer' => '',
+			'currency' => '',
+			'source'   => null,
+			'copy'     => '',
+			'status'   => 'auto-draft',
 		)
 	);
 
@@ -64,8 +61,8 @@ function amowc_create_draft( $args ) {
 		$order->set_address( $source->get_address( 'billing' ), 'billing' );
 		$order->set_address( $source->get_address( 'shipping' ), 'shipping' );
 		$order->set_currency( $source->get_currency() );
-	} elseif ( $args['customer_id'] ) {
-		amowc_set_customer( $order, $args['customer_id'] );
+	} elseif ( '' !== (string) $args['customer'] ) {
+		amowc_apply_picked_customer( $order, (string) $args['customer'] );
 	}
 
 	// What belongs to the original's payment and processing is never copied: payment method,
@@ -116,28 +113,6 @@ function amowc_create_draft( $args ) {
 	do_action( 'amowc_draft_created', $order, $args );
 
 	return $order;
-}
-
-/**
- * Assigns a customer and loads their saved addresses.
- *
- * @param WC_Order $order       Order.
- * @param int      $customer_id Customer user ID.
- */
-function amowc_set_customer( $order, $customer_id ) {
-	$customer = new WC_Customer( $customer_id );
-
-	if ( ! $customer->get_id() ) {
-		return;
-	}
-
-	$order->set_customer_id( $customer->get_id() );
-	$order->set_address( $customer->get_billing(), 'billing' );
-	$order->set_address( $customer->get_shipping(), 'shipping' );
-
-	if ( ! $order->get_billing_email() ) {
-		$order->set_billing_email( $customer->get_email() );
-	}
 }
 
 /**
@@ -222,10 +197,10 @@ function amowc_handle_new_order_form() {
 
 	$order = amowc_create_draft(
 		array(
-			'customer_id' => isset( $_POST['amowc_customer'] ) ? absint( $_POST['amowc_customer'] ) : 0,
-			'currency'    => array_key_exists( $currency, amowc_currencies() ) ? $currency : '',
-			'source'      => $source && 'shop_order' === $source->get_type() ? $source : null,
-			'copy'        => isset( $_POST['amowc_copy'] ) && 'all' === sanitize_key( $_POST['amowc_copy'] ) ? 'all' : 'products',
+			'customer' => isset( $_POST['amowc_customer'] ) ? sanitize_text_field( wp_unslash( $_POST['amowc_customer'] ) ) : '',
+			'currency' => array_key_exists( $currency, amowc_currencies() ) ? $currency : '',
+			'source'   => $source && 'shop_order' === $source->get_type() ? $source : null,
+			'copy'     => isset( $_POST['amowc_copy'] ) && 'all' === sanitize_key( $_POST['amowc_copy'] ) ? 'all' : 'products',
 		)
 	);
 
@@ -388,33 +363,32 @@ function amowc_help_tip( $tip ) {
 
 /**
  * Turns the currency selector on or off from the order screen.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array
  */
-function amowc_ajax_toggle_currency() {
-	check_ajax_referer( 'amowc_admin', 'security' );
-
-	if ( ! current_user_can( 'manage_woocommerce' ) ) {
-		wp_send_json_error();
-	}
-
-	update_option( 'amowc_currency', empty( $_POST['on'] ) ? 'no' : 'yes' );
-	wp_send_json_success();
+function amowc_rest_toggle_currency( $request ) {
+	update_option( 'amowc_currency', $request['enabled'] ? 'yes' : 'no' );
+	return array( 'enabled' => (bool) $request['enabled'] );
 }
 
 /**
  * Saves the currency as soon as it changes, so items added next use it.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error
  */
-function amowc_ajax_set_currency() {
-	check_ajax_referer( 'amowc_admin', 'security' );
+function amowc_rest_set_currency( $request ) {
+	$order = amowc_rest_order( $request );
 
-	$order    = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
-	$currency = isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : '';
-
-	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() || $order->get_date_paid() ) {
-		wp_send_json_error();
+	if ( is_wp_error( $order ) ) {
+		return $order;
 	}
 
-	if ( ! array_key_exists( $currency, amowc_currencies() ) ) {
-		wp_send_json_error();
+	$currency = $request['currency'];
+
+	if ( $order->get_date_paid() || ! array_key_exists( $currency, amowc_currencies() ) ) {
+		return new WP_Error( 'amowc_currency', __( 'The currency of this order can not be changed.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 	}
 
 	$old = $order->get_currency();
@@ -429,20 +403,17 @@ function amowc_ajax_set_currency() {
 		}
 	}
 
-	wp_send_json_success();
+	return array( 'currency' => $currency );
 }
 
 /**
- * Orders for the "Copy products from" picker. Empty search: the latest 10.
+ * Orders for the "Start from a past order" picker. Empty search: the latest 10.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array
  */
-function amowc_ajax_search_orders() {
-	check_ajax_referer( 'amowc_admin', 'security' );
-
-	if ( ! current_user_can( 'edit_shop_orders' ) ) {
-		wp_die( -1 );
-	}
-
-	$term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
+function amowc_rest_search_orders( $request ) {
+	$term = $request['term'];
 
 	if ( '' === $term ) {
 		$orders = wc_get_orders(
@@ -500,7 +471,7 @@ function amowc_ajax_search_orders() {
 		);
 	}
 
-	wp_send_json( array( 'results' => $results ) );
+	return array( 'results' => $results );
 }
 
 /**

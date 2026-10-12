@@ -6,9 +6,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'wp_ajax_amowc_search_products', 'amowc_ajax_search_products' );
-add_action( 'wp_ajax_amowc_add_product', 'amowc_ajax_add_product' );
-
 /**
  * One line of the product list: name or attributes, price, SKU, stock.
  *
@@ -133,16 +130,13 @@ function amowc_parse_any_values( $product, $query ) {
 /**
  * Product list for the "Add a product" box. Empty search: best sellers.
  * Variable products come as a group with one entry per variation.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array
  */
-function amowc_ajax_search_products() {
-	check_ajax_referer( 'amowc_admin', 'security' );
-
-	if ( ! current_user_can( 'edit_shop_orders' ) ) {
-		wp_die( -1 );
-	}
-
-	$term     = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
-	$page     = isset( $_GET['page'] ) ? max( 1, absint( $_GET['page'] ) ) : 1;
+function amowc_rest_search_products( $request ) {
+	$term     = $request['term'];
+	$page     = max( 1, (int) $request['page'] );
 	$per_page = (int) apply_filters( 'amowc_products_per_page', 20 );
 
 	// Grouped and external products can't go on an order.
@@ -188,11 +182,9 @@ function amowc_ajax_search_products() {
 		$ids = array_filter( array_map( 'absint', WC_Data_Store::load( 'product' )->search_products( $term, '', true, false ) ) );
 
 		if ( ! $ids ) {
-			wp_send_json(
-				array(
-					'results'    => array(),
-					'pagination' => array( 'more' => false ),
-				)
+			return array(
+				'results'    => array(),
+				'pagination' => array( 'more' => false ),
 			);
 		}
 
@@ -249,52 +241,51 @@ function amowc_ajax_search_products() {
 		}
 	}
 
-	wp_send_json(
-		array(
-			'results'    => $results,
-			'pagination' => array( 'more' => $page < $query->max_num_pages ),
-		)
+	return array(
+		'results'    => $results,
+		'pagination' => array( 'more' => $page < $query->max_num_pages ),
 	);
 }
 
 /**
  * Adds a product to the order. When it's already there, the quantity goes up instead.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return array|WP_Error Items box and notes HTML.
  */
-function amowc_ajax_add_product() {
-	check_ajax_referer( 'amowc_admin', 'security' );
+function amowc_rest_add_product( $request ) {
+	$order = amowc_rest_order( $request );
 
-	$order = isset( $_POST['order_id'] ) ? wc_get_order( absint( $_POST['order_id'] ) ) : null;
-	// "123" or, for a variation with "Any" attributes, "123|color=red".
-	$picked  = isset( $_POST['product_id'] ) ? explode( '|', sanitize_text_field( wp_unslash( $_POST['product_id'] ) ), 2 ) : array( 0 );
+	if ( is_wp_error( $order ) ) {
+		return $order;
+	}
+
+	$picked  = explode( '|', $request['product'], 2 );
 	$product = wc_get_product( absint( $picked[0] ) );
 	$chosen  = $product && isset( $picked[1] ) ? amowc_parse_any_values( $product, $picked[1] ) : array();
+	$invalid = new WP_Error( 'amowc_product', __( 'Pick a product or a variation.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 
-	if ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'business-bloomer-advanced-manual-orders' ) ) );
+	if ( ! $product || $product->is_type( 'variable' ) || ( isset( $picked[1] ) && substr_count( $picked[1], '=' ) !== count( $chosen ) ) ) {
+		return $invalid;
 	}
 
 	// One per pick. Pick again for more, or edit the quantity on the line.
 	$qty = 1;
 
-	if ( ! $order || ! current_user_can( 'edit_shop_orders' ) || ! $order->is_editable() ) {
-		wp_send_json_error( array( 'message' => __( 'This order can not be edited.', 'business-bloomer-advanced-manual-orders' ) ) );
-	}
-
-	if ( ! $product || $product->is_type( 'variable' ) ) {
-		wp_send_json_error( array( 'message' => __( 'Pick a product or a variation.', 'business-bloomer-advanced-manual-orders' ) ) );
-	}
+	// The address on screen prices the product, even before it's saved.
+	amowc_request_location( amowc_rest_address( $request ) );
 
 	// Unsaved changes to the items on screen are kept, like WooCommerce does.
-	if ( ! empty( $_POST['items'] ) ) {
+	if ( '' !== $request['items'] ) {
 		$items = array();
-		parse_str( wp_unslash( $_POST['items'] ), $items ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by wc_save_order_items().
+		parse_str( $request['items'], $items );
 		wc_save_order_items( $order->get_id(), $items );
 		$order = wc_get_order( $order->get_id() );
 	}
 
 	$validation = apply_filters( 'woocommerce_ajax_add_order_item_validation', new WP_Error(), $product, $order, $qty ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	if ( $validation->get_error_code() ) {
-		wp_send_json_error( array( 'message' => $validation->get_error_message() ) );
+		return new WP_Error( 'amowc_product', $validation->get_error_message(), array( 'status' => 400 ) );
 	}
 
 	$existing = null;
@@ -340,7 +331,7 @@ function amowc_ajax_add_product() {
 		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	}
 
-	wp_send_json_success( amowc_order_items_html( $order->get_id() ) );
+	return amowc_order_items_html( $order->get_id() );
 }
 
 /**
@@ -350,19 +341,30 @@ function amowc_ajax_add_product() {
  * @return array html, notes_html.
  */
 function amowc_order_items_html( $order_id ) {
+	// REST requests don't load WooCommerce's admin, which other plugins' item hooks may expect.
+	include_once WC_ABSPATH . 'includes/admin/wc-admin-functions.php';
+
 	$order = wc_get_order( $order_id );
 
 	ob_start();
 	include WC_ABSPATH . 'includes/admin/meta-boxes/views/html-order-items.php';
-	$html = ob_get_clean();
-
-	$notes = wc_get_order_notes( array( 'order_id' => $order_id ) );
-	ob_start();
-	include WC_ABSPATH . 'includes/admin/meta-boxes/views/html-order-notes.php';
-	$notes_html = ob_get_clean();
 
 	return array(
-		'html'       => $html,
-		'notes_html' => $notes_html,
+		'html'       => ob_get_clean(),
+		'notes_html' => amowc_order_notes_html( $order_id ),
 	);
+}
+
+/**
+ * The order notes list, rendered by WooCommerce's own template.
+ *
+ * @param int $order_id Order ID.
+ * @return string
+ */
+function amowc_order_notes_html( $order_id ) {
+	$notes = wc_get_order_notes( array( 'order_id' => $order_id ) );
+
+	ob_start();
+	include WC_ABSPATH . 'includes/admin/meta-boxes/views/html-order-notes.php';
+	return ob_get_clean();
 }

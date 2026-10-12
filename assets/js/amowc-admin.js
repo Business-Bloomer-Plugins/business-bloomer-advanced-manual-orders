@@ -4,6 +4,38 @@ jQuery( function ( $ ) {
 
 	var i18n = amowc.i18n;
 
+	/* ---------- The plugin's REST routes ---------- */
+
+	function api( method, path, data ) {
+		return $.ajax( {
+			url: amowc.rest + path,
+			method: method,
+			data: data,
+			dataType: 'json',
+			headers: { 'X-WP-Nonce': amowc.restNonce }
+		} );
+	}
+
+	function fail( xhr ) {
+		window.alert( xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : i18n.error );
+	}
+
+	// selectWoo lists fed by a route that takes a search term.
+	function source( path, extra ) {
+		return {
+			url: amowc.rest + path,
+			dataType: 'json',
+			delay: 250,
+			headers: { 'X-WP-Nonce': amowc.restNonce },
+			data: function ( params ) {
+				return $.extend( { term: params.term || '' }, extra ? extra( params ) : {} );
+			},
+			processResults: function ( data ) {
+				return data;
+			}
+		};
+	}
+
 	/* ---------- Simple modal ---------- */
 
 	function openModal( $modal ) {
@@ -64,17 +96,16 @@ jQuery( function ( $ ) {
 			allowClear: true,
 			placeholder: $form.find( '#amowc_copy_from' ).data( 'placeholder' ),
 			minimumInputLength: 0,
-			ajax: {
-				url: amowc.ajaxUrl,
-				dataType: 'json',
-				delay: 250,
-				data: function ( params ) {
-					return { action: 'amowc_search_orders', security: amowc.nonce, term: params.term || '' };
-				},
-				processResults: function ( data ) {
-					return data;
-				}
-			}
+			ajax: source( 'orders' )
+		} );
+
+		// Registered customers and past guests, by name, email, phone or company.
+		$form.find( '#amowc_customer' ).selectWoo( {
+			width: '100%',
+			allowClear: true,
+			placeholder: $form.find( '#amowc_customer' ).data( 'placeholder' ),
+			minimumInputLength: 0,
+			ajax: source( 'customers' )
 		} );
 
 		// A past order picked: repeat it all, or copy its products for the customer below.
@@ -114,16 +145,10 @@ jQuery( function ( $ ) {
 		var on = '1' === String( $( this ).data( 'on' ) );
 		e.preventDefault();
 
-		$.post( amowc.ajaxUrl, { action: 'amowc_toggle_currency', security: amowc.nonce, on: on ? 1 : 0 } ).done( function ( res ) {
-			if ( ! res || ! res.success ) {
-				window.alert( i18n.error );
-				return;
-			}
+		api( 'POST', 'settings/currency-selector', { enabled: on ? 1 : 0 } ).done( function () {
 			$( '.amowc-currency' ).prop( 'hidden', ! on );
 			$( '.amowc-currency-off' ).prop( 'hidden', on );
-		} ).fail( function () {
-			window.alert( i18n.error );
-		} );
+		} ).fail( fail );
 	} );
 
 	if ( 'edit' !== amowc.screen || 'undefined' === typeof woocommerce_admin_meta_boxes ) {
@@ -170,9 +195,9 @@ jQuery( function ( $ ) {
 		return addr.country ? addr : address( 'billing' );
 	}
 
-	// Products added to the order are priced for the address on screen, even before it's saved.
+	// Products added with WooCommerce's own "Add item(s)" are priced for the address on screen too.
 	$.ajaxPrefilter( function ( options ) {
-		if ( 'string' === typeof options.data && /action=(woocommerce_add_order_item|amowc_add_product)(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
+		if ( 'string' === typeof options.data && /action=woocommerce_add_order_item(&|$)/.test( options.data ) && ! /(^|&)country=/.test( options.data ) ) {
 			options.data += '&' + $.param( taxableAddress() );
 		}
 	} );
@@ -202,14 +227,11 @@ jQuery( function ( $ ) {
 		} ).always( unblock );
 	}
 
-	// Core requests after which totals are stale.
-	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items|amowc_add_shipping|amowc_add_product)(&|$)/;
+	// Core requests after which totals are stale. The plugin's own requests recalculate when they're done.
+	var stale = /(^|&)action=(woocommerce_add_order_item|woocommerce_remove_order_item|woocommerce_save_order_items)(&|$)/;
 
 	$( document ).ajaxComplete( function ( e, xhr, settings ) {
-		if ( ! xhr || 200 !== xhr.status || 'string' !== typeof settings.data || ! stale.test( settings.data ) ) {
-			return;
-		}
-		if ( amowc.autoTotals || /action=amowc_add_shipping/.test( settings.data ) ) {
+		if ( amowc.autoTotals && xhr && 200 === xhr.status && 'string' === typeof settings.data && stale.test( settings.data ) ) {
 			recalculate();
 		}
 	} );
@@ -253,27 +275,13 @@ jQuery( function ( $ ) {
 					return i18n.noResults;
 				}
 			},
-			ajax: {
-				url: amowc.ajaxUrl,
-				dataType: 'json',
-				delay: 250,
-				cache: true,
-				data: function ( params ) {
-					return { action: 'amowc_search_products', security: amowc.nonce, term: params.term || '', page: params.page || 1 };
-				},
-				processResults: function ( data ) {
-					return data;
-				}
-			}
+			ajax: $.extend( source( 'products', function ( params ) {
+				return { page: params.page || 1 };
+			} ), { cache: true } )
 		} );
 
 		$select.on( 'select2:select', function ( e ) {
-			var data = {
-				action: 'amowc_add_product',
-				security: amowc.nonce,
-				order_id: orderId,
-				product_id: e.params.data.id
-			};
+			var data = $.extend( {}, taxableAddress(), { product: e.params.data.id } );
 
 			// Unsaved edits to the items, as WooCommerce sends them.
 			if ( 'true' === $items.find( 'button.cancel-action' ).attr( 'data-reload' ) ) {
@@ -281,18 +289,15 @@ jQuery( function ( $ ) {
 			}
 
 			block();
-			$.post( amowc.ajaxUrl, data ).done( function ( res ) {
-				if ( ! res || ! res.success ) {
-					window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
-					return;
-				}
-				$items.find( '.inside' ).empty().append( res.data.html );
-				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.data.notes_html );
+			api( 'POST', 'orders/' + orderId + '/items', data ).done( function ( res ) {
+				$items.find( '.inside' ).empty().append( res.html );
+				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.notes_html );
 				$items.trigger( 'wc_order_items_reloaded' );
+				if ( amowc.autoTotals ) {
+					recalculate();
+				}
 				$items.find( '.amowc-product-search' ).selectWoo( 'focus' );
-			} ).fail( function () {
-				window.alert( i18n.error );
-			} ).always( unblock );
+			} ).fail( fail ).always( unblock );
 		} );
 	}
 
@@ -359,17 +364,10 @@ jQuery( function ( $ ) {
 
 	$( '#order_data' ).on( 'change', '#amowc_currency', function () {
 		block();
-		$.post( amowc.ajaxUrl, {
-			action: 'amowc_set_currency',
-			security: amowc.nonce,
-			order_id: orderId,
-			currency: $( this ).val()
-		} ).done( function ( res ) {
-			if ( ! res || ! res.success ) {
-				window.alert( i18n.error );
-			}
+		api( 'POST', 'orders/' + orderId + '/currency', { currency: $( this ).val() } ).fail( fail ).always( function () {
+			unblock();
 			$items.trigger( 'wc_order_items_reload' );
-		} ).always( unblock );
+		} );
 	} );
 
 	/* ---------- Shipping rates ---------- */
@@ -383,20 +381,11 @@ jQuery( function ( $ ) {
 
 	$items.on( 'click', 'button.amowc-calc-shipping', function () {
 		block();
-		$.post( amowc.ajaxUrl, $.extend( {}, shippingAddress(), {
-			action: 'amowc_shipping_rates',
-			security: amowc.nonce,
-			order_id: orderId
-		} ) ).done( function ( res ) {
-			if ( ! res || ! res.success ) {
-				window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
-				return;
-			}
-
+		api( 'GET', 'orders/' + orderId + '/shipping-rates', shippingAddress() ).done( function ( res ) {
 			var $rates = $ship.find( '.amowc-rates' ).empty();
-			var many = res.data.packages.length > 1;
+			var many = res.packages.length > 1;
 
-			$.each( res.data.packages, function ( n, pkg ) {
+			$.each( res.packages, function ( n, pkg ) {
 				var $set = $( '<fieldset></fieldset>' ).attr( 'data-index', pkg.index );
 				if ( many ) {
 					$set.append( $( '<legend></legend>' ).text( i18n.package.replace( '%d', n + 1 ) ) );
@@ -412,17 +401,11 @@ jQuery( function ( $ ) {
 			} );
 
 			openModal( $ship );
-		} ).fail( function () {
-			window.alert( i18n.error );
-		} ).always( unblock );
+		} ).fail( fail ).always( unblock );
 	} );
 
 	$ship.on( 'click', '.amowc-add-shipping', function () {
-		var data = $.extend( {}, shippingAddress(), {
-			action: 'amowc_add_shipping',
-			security: amowc.nonce,
-			order_id: orderId
-		} );
+		var data = shippingAddress();
 
 		$ship.find( 'fieldset' ).each( function () {
 			data[ 'rates[' + $( this ).data( 'index' ) + ']' ] = $( this ).find( 'input:checked' ).val();
@@ -431,28 +414,111 @@ jQuery( function ( $ ) {
 		closeModal( $ship );
 		block();
 
-		// Totals refresh through the ajaxComplete handler above.
-		$.post( amowc.ajaxUrl, data ).done( function ( res ) {
-			if ( ! res || ! res.success ) {
-				window.alert( res && res.data && res.data.message ? res.data.message : i18n.error );
-			}
-		} ).always( unblock );
+		api( 'POST', 'orders/' + orderId + '/shipping', data ).done( function () {
+			unblock();
+			recalculate();
+		} ).fail( function ( xhr ) {
+			unblock();
+			fail( xhr );
+		} );
 	} );
 
-	/* ---------- Payment link: copy button ---------- */
+	/* ---------- Payment link: copy it, or email it ---------- */
 
 	var $payLink = $( '.wc-order-status label a[href*="pay_for_order"]' );
-	if ( $payLink.length && navigator.clipboard ) {
-		var $copy = $( '<button type="button" class="button-link amowc-link amowc-copy-link"></button>' ).text( i18n.copyLink );
-		$payLink.closest( '.wc-order-status' ).append( $copy );
-		$copy.on( 'click', function ( e ) {
+	if ( $payLink.length ) {
+		var $status = $payLink.closest( '.wc-order-status' );
+
+		if ( navigator.clipboard ) {
+			var $copy = $( '<button type="button" class="button-link amowc-link amowc-pay-action amowc-copy-link"></button>' ).text( i18n.copyLink );
+			$status.append( $copy );
+			$copy.on( 'click', function ( e ) {
+				e.preventDefault();
+				navigator.clipboard.writeText( $payLink.attr( 'href' ) ).then( function () {
+					$copy.text( i18n.copied );
+					setTimeout( function () {
+						$copy.text( i18n.copyLink );
+					}, 2000 );
+				} );
+			} );
+		}
+
+		var $email = $( '<button type="button" class="button-link amowc-link amowc-pay-action amowc-email-link"></button>' ).text( i18n.emailLink ).attr( 'data-tip', i18n.tipEmailLink );
+		$status.append( $email );
+		if ( $.fn.tipTip ) {
+			$email.tipTip( { attribute: 'data-tip', fadeIn: 50, fadeOut: 50, delay: 200 } );
+		}
+		$email.on( 'click', function ( e ) {
 			e.preventDefault();
-			navigator.clipboard.writeText( $payLink.attr( 'href' ) ).then( function () {
-				$copy.text( i18n.copied );
+			if ( amowc.email && ! window.confirm( i18n.emailConfirm.replace( '%s', amowc.email ) ) ) {
+				return;
+			}
+			$email.prop( 'disabled', true );
+			api( 'POST', 'orders/' + orderId + '/email-pay-link' ).done( function ( res ) {
+				$( '#woocommerce-order-notes ul.order_notes' ).replaceWith( res.notes_html );
+				$email.text( i18n.emailed.replace( '%s', res.email ) );
 				setTimeout( function () {
-					$copy.text( i18n.copyLink );
-				}, 2000 );
+					$email.text( i18n.emailLink );
+				}, 3000 );
+			} ).fail( fail ).always( function () {
+				$email.prop( 'disabled', false );
 			} );
 		} );
+	}
+
+	/* ---------- Customer: registered customers and past guests, addresses filled in ---------- */
+
+	var $customer = $( '#customer_user' );
+
+	function fillAddress( type, address ) {
+		if ( ! address ) {
+			return;
+		}
+		// Country first, so the state field matches it.
+		$( '#_' + type + '_country' ).val( address.country || '' ).trigger( 'change' );
+		$.each( address, function ( key, value ) {
+			if ( 'country' !== key ) {
+				$( ':input#_' + type + '_' + key ).val( value ).trigger( 'change' );
+			}
+		} );
+	}
+
+	if ( $customer.length && $customer.hasClass( 'select2-hidden-accessible' ) ) {
+		$customer.selectWoo( 'destroy' ).selectWoo( {
+			width: '100%',
+			allowClear: true,
+			placeholder: $customer.data( 'placeholder' ),
+			minimumInputLength: 0,
+			ajax: source( 'customers' )
+		} );
+
+		$customer.on( 'select2:selecting', function ( e ) {
+			var picked = e.params.args.data;
+			if ( ! picked.billing ) {
+				return;
+			}
+
+			// Show both addresses, filled in.
+			$( 'a.edit_address' ).each( function () {
+				if ( $( this ).closest( '.order_data_column' ).find( 'div.edit_address' ).is( ':hidden' ) ) {
+					$( this ).trigger( 'click' );
+				}
+			} );
+			fillAddress( 'billing', picked.billing );
+			fillAddress( 'shipping', picked.shipping );
+
+			// A guest has no account: the order stays a guest order, with their addresses.
+			if ( 0 === String( picked.id ).indexOf( 'o:' ) ) {
+				e.preventDefault();
+				$customer.val( null ).trigger( 'change.select2' ).selectWoo( 'close' );
+			}
+		} );
+
+		var $label = $customer.closest( 'p' ).find( 'label' ).first();
+		if ( $label.length ) {
+			var $tip = $( '<span class="amowc-help-tip" tabindex="0"></span>' ).attr( { 'data-tip': i18n.tipCustomer, 'aria-label': i18n.tipCustomer } );
+			$label.contents().first().after( $tip );
+			helpTips( $label );
+		}
 	}
 } );

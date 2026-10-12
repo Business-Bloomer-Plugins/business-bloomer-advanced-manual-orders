@@ -44,6 +44,8 @@ function amowc_init() {
 
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-settings.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-orders.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-customers.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-rest.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-admin.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-shipping.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-products.php';

@@ -47,6 +47,15 @@ function amowc_enqueue() {
 		return;
 	}
 
+	// The billing email saved on the order being edited, for the "Email Order Pay link" prompt.
+	$email = '';
+	if ( 'edit' === $screen ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reads which order is open.
+		$order_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0 );
+		$order    = $order_id ? wc_get_order( $order_id ) : null;
+		$email    = $order ? $order->get_billing_email() : '';
+	}
+
 	wp_enqueue_style( 'amowc-admin', AMOWC_PLUGIN_URL . 'assets/css/amowc-admin.css', array(), AMOWC_VERSION );
 	wp_enqueue_script( 'amowc-admin', AMOWC_PLUGIN_URL . 'assets/js/amowc-admin.js', array( 'jquery', 'wc-enhanced-select' ), AMOWC_VERSION, true );
 	wp_localize_script(
@@ -54,11 +63,12 @@ function amowc_enqueue() {
 		'amowc',
 		array(
 			'screen'     => $screen,
-			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-			'nonce'      => wp_create_nonce( 'amowc_admin' ),
+			'rest'       => esc_url_raw( rest_url( 'amowc/v1/' ) ),
+			'restNonce'  => wp_create_nonce( 'wp_rest' ),
 			'popup'      => amowc_enabled( 'popup' ),
 			'autoTotals' => amowc_enabled( 'auto_totals' ),
 			'shipping'   => wc_shipping_enabled(),
+			'email'      => $email,
 			'i18n'       => array(
 				'shippingTitle' => __( 'Calculate shipping', 'business-bloomer-advanced-manual-orders' ),
 				/* translators: %d: package number */
@@ -69,6 +79,14 @@ function amowc_enqueue() {
 				'error'         => __( 'Something went wrong. Please try again.', 'business-bloomer-advanced-manual-orders' ),
 				'copyLink'      => __( 'Copy Order Pay link', 'business-bloomer-advanced-manual-orders' ),
 				'copied'        => __( 'Link copied', 'business-bloomer-advanced-manual-orders' ),
+				'emailLink'     => __( 'Email Order Pay link', 'business-bloomer-advanced-manual-orders' ),
+				/* translators: %s: customer email address */
+				'emailConfirm'  => __( 'Email the payment link to %s now?', 'business-bloomer-advanced-manual-orders' ),
+				/* translators: %s: customer email address */
+				'emailed'       => __( 'Sent to %s', 'business-bloomer-advanced-manual-orders' ),
+				'tipEmailLink'  => __( 'Sends WooCommerce\'s customer invoice email, with the payment link, to the billing email saved on this order. Same as Order actions > Send order details to customer.', 'business-bloomer-advanced-manual-orders' ),
+				'findCustomer'  => __( 'Name, email, phone or company', 'business-bloomer-advanced-manual-orders' ),
+				'tipCustomer'   => __( 'Finds registered customers and guests by name, email, phone or company. Picking one fills in their billing and shipping addresses.', 'business-bloomer-advanced-manual-orders' ),
 				'addProduct'    => __( 'Add a product: type a name or SKU', 'business-bloomer-advanced-manual-orders' ),
 				'searching'     => __( 'Searching…', 'business-bloomer-advanced-manual-orders' ),
 				'noResults'     => __( 'No products found', 'business-bloomer-advanced-manual-orders' ),
@@ -118,8 +136,8 @@ function amowc_new_order_form() {
 				<div class="amowc-new-fields">
 					<p>
 						<label for="amowc_customer"><?php esc_html_e( 'Customer', 'business-bloomer-advanced-manual-orders' ); ?></label>
-						<select id="amowc_customer" name="amowc_customer" class="wc-customer-search" data-placeholder="<?php esc_attr_e( 'Guest', 'business-bloomer-advanced-manual-orders' ); ?>" data-allow_clear="true" style="width:100%"></select>
-						<span class="description"><?php esc_html_e( 'Their saved billing and shipping addresses are filled in.', 'business-bloomer-advanced-manual-orders' ); ?></span>
+						<select id="amowc_customer" name="amowc_customer" data-placeholder="<?php esc_attr_e( 'Guest, or search by name, email, phone or company', 'business-bloomer-advanced-manual-orders' ); ?>" style="width:100%"></select>
+						<span class="description"><?php esc_html_e( 'Registered customers and past guests. Their billing and shipping addresses are filled in.', 'business-bloomer-advanced-manual-orders' ); ?></span>
 					</p>
 
 					<?php amowc_currency_selector( 'amowc_new_currency', get_woocommerce_currency() ); ?>
