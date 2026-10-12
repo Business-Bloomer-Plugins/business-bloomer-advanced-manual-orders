@@ -283,6 +283,26 @@ function amowc_rest_add_product( $request ) {
 		$order = wc_get_order( $order->get_id() );
 	}
 
+	$added = amowc_add_product_to_order( $order, $product, $qty, $chosen );
+
+	if ( is_wp_error( $added ) ) {
+		return $added;
+	}
+
+	return amowc_order_items_html( $order->get_id() );
+}
+
+/**
+ * Adds a product to an order, as WooCommerce's own "Add item(s)" does. When it's already
+ * there with the same options, its quantity goes up at the line's current unit price.
+ *
+ * @param WC_Order   $order   Order.
+ * @param WC_Product $product Simple product or variation.
+ * @param int        $qty     Quantity.
+ * @param array      $chosen  Values for the variation's "Any" attributes.
+ * @return true|WP_Error
+ */
+function amowc_add_product_to_order( $order, $product, $qty, $chosen = array() ) {
 	$validation = apply_filters( 'woocommerce_ajax_add_order_item_validation', new WP_Error(), $product, $order, $qty ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	if ( $validation->get_error_code() ) {
 		return new WP_Error( 'amowc_product', $validation->get_error_message(), array( 'status' => 400 ) );
@@ -331,7 +351,7 @@ function amowc_rest_add_product( $request ) {
 		do_action( 'woocommerce_ajax_order_items_added', array( $item_id => $item ), $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's Add item does.
 	}
 
-	return amowc_order_items_html( $order->get_id() );
+	return true;
 }
 
 /**

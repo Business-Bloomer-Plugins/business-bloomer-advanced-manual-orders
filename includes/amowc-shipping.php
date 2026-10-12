@@ -193,10 +193,40 @@ function amowc_rest_add_shipping( $request ) {
 	list( $order, $destination ) = $found;
 
 	$chosen = array_map( 'sanitize_text_field', array_map( 'strval', (array) $request['rates'] ) );
-	$added  = array();
+	$added  = amowc_set_shipping( $order, $destination, $chosen );
+
+	if ( is_wp_error( $added ) ) {
+		return $added;
+	}
+
+	return array( 'added' => count( $added ) );
+}
+
+/**
+ * Replaces the order's shipping lines with the chosen rates, and recalculates the totals.
+ *
+ * @param WC_Order     $order       Order.
+ * @param array        $destination country, state, postcode, city, address_1, address_2.
+ * @param array|string $chosen      Package index => rate ID or "cheapest". A string applies to every package.
+ * @return WC_Shipping_Rate[]|WP_Error The rates added.
+ */
+function amowc_set_shipping( $order, $destination, $chosen ) {
+	$added = array();
 
 	foreach ( amowc_get_shipping_rates( $order, $destination ) as $index => $rates ) {
-		$rate_id = isset( $chosen[ $index ] ) ? $chosen[ $index ] : '';
+		$rate_id = is_array( $chosen ) ? ( isset( $chosen[ $index ] ) ? $chosen[ $index ] : '' ) : $chosen;
+		if ( 'cheapest' === $rate_id && $rates ) {
+			// Delivery first: local pickup costs nothing but isn't shipping the order.
+			uasort(
+				$rates,
+				function ( $a, $b ) {
+					$pickup_a = in_array( $a->get_method_id(), array( 'local_pickup', 'pickup_location' ), true );
+					$pickup_b = in_array( $b->get_method_id(), array( 'local_pickup', 'pickup_location' ), true );
+					return array( $pickup_a, (float) $a->get_cost() ) <=> array( $pickup_b, (float) $b->get_cost() );
+				}
+			);
+			$rate_id = key( $rates );
+		}
 		if ( isset( $rates[ $rate_id ] ) ) {
 			$added[] = $rates[ $rate_id ];
 		}
@@ -218,5 +248,18 @@ function amowc_rest_add_shipping( $request ) {
 
 	$order->calculate_totals( false );
 
-	return array( 'added' => count( $added ) );
+	return $added;
+}
+
+/**
+ * Where an order ships to: the shipping address, or the billing one when it's empty.
+ *
+ * @param WC_Order $order Order.
+ * @return array country, state, postcode, city, address_1, address_2.
+ */
+function amowc_order_destination( $order ) {
+	$type = $order->get_shipping_country() ? 'shipping' : 'billing';
+	$keys = array( 'country', 'state', 'postcode', 'city', 'address_1', 'address_2' );
+
+	return array_intersect_key( $order->get_address( $type ), array_flip( $keys ) );
 }

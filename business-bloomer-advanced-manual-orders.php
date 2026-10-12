@@ -51,6 +51,7 @@ function amowc_init() {
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-products.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-payment.php';
 	require_once AMOWC_PLUGIN_DIR . 'includes/amowc-tax-fix.php';
+	require_once AMOWC_PLUGIN_DIR . 'includes/class-amowc-abilities.php';
 
 	add_filter( 'plugin_action_links_' . plugin_basename( AMOWC_PLUGIN_FILE ), 'amowc_action_links' );
 }

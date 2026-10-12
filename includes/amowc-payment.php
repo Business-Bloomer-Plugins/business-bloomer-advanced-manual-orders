@@ -93,8 +93,7 @@ function amowc_pay_page_currency() {
 }
 
 /**
- * "Email Order Pay link": sends WooCommerce's own customer invoice email, which carries
- * the payment link, exactly like "Order actions > Send order details to customer".
+ * "Email Order Pay link" button.
  *
  * @param WP_REST_Request $request Request.
  * @return array|WP_Error
@@ -106,6 +105,26 @@ function amowc_rest_email_pay_link( $request ) {
 		return $order;
 	}
 
+	$sent = amowc_email_pay_link( $order );
+
+	if ( is_wp_error( $sent ) ) {
+		return $sent;
+	}
+
+	return array(
+		'email'      => $order->get_billing_email(),
+		'notes_html' => amowc_order_notes_html( $order->get_id() ),
+	);
+}
+
+/**
+ * Emails the payment link to the order's billing email: WooCommerce's own customer invoice
+ * email, exactly like "Order actions > Send order details to customer".
+ *
+ * @param WC_Order $order Order.
+ * @return true|WP_Error
+ */
+function amowc_email_pay_link( $order ) {
 	if ( ! $order->needs_payment() ) {
 		return new WP_Error( 'amowc_pay_link', __( 'This order doesn\'t need payment.', 'business-bloomer-advanced-manual-orders' ), array( 'status' => 400 ) );
 	}
@@ -126,8 +145,5 @@ function amowc_rest_email_pay_link( $request ) {
 
 	do_action( 'woocommerce_after_resend_order_email', $order, 'customer_invoice' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce core hook, fired as core's order action does.
 
-	return array(
-		'email'      => $order->get_billing_email(),
-		'notes_html' => amowc_order_notes_html( $order->get_id() ),
-	);
+	return true;
 }

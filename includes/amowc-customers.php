@@ -7,13 +7,24 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Customers for the customer pickers. Empty search: the customers of the latest orders.
+ * Customers for the customer pickers.
  *
  * @param WP_REST_Request $request Request.
  * @return array
  */
 function amowc_rest_search_customers( $request ) {
-	$term    = trim( $request['term'] );
+	return array( 'results' => amowc_find_customers( $request['term'] ) );
+}
+
+/**
+ * Registered customers and guests matching a search, with their addresses.
+ * Empty search: the customers of the latest orders.
+ *
+ * @param string $term Name, email, phone or company.
+ * @return array[] id ("12", or "o:345" for a guest), text, billing, shipping.
+ */
+function amowc_find_customers( $term ) {
+	$term    = trim( (string) $term );
 	$limit   = (int) apply_filters( 'amowc_customers_limit', 20 );
 	$entries = array();
 
@@ -31,7 +42,7 @@ function amowc_rest_search_customers( $request ) {
 			amowc_add_customer_entry( $entries, $order );
 		}
 
-		return array( 'results' => array_values( array_slice( $entries, 0, 10 ) ) );
+		return array_values( array_slice( $entries, 0, 10 ) );
 	}
 
 	foreach ( amowc_search_customer_ids( $term, $limit ) as $user_id ) {
@@ -53,7 +64,7 @@ function amowc_rest_search_customers( $request ) {
 		}
 	}
 
-	return array( 'results' => array_values( array_slice( $entries, 0, $limit ) ) );
+	return array_values( array_slice( $entries, 0, $limit ) );
 }
 
 /**
