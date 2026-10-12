@@ -1,7 +1,7 @@
 === Business Bloomer Advanced Manual Orders for WooCommerce ===
 Contributors: businessbloomer
 Tags: manual order, phone order, admin order, currency, add products
-Requires at least: 6.5
+Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.0.0
@@ -27,7 +27,7 @@ Taking an order by phone or email in WooCommerce means typing the shipping cost 
 * **New order for this customer:** a fresh order with the same customer and addresses.
 * **New order with these products:** the same products and quantities at today's prices.
 * **Payment link that works:** customers pay without logging in or confirming their email, and the pay page runs in the order's currency. Under the order status, "Copy Order Pay link" copies it and "Email Order Pay link" sends it to the customer with WooCommerce's own invoice email.
-* **Ready for AI agents:** on WordPress 6.9 and later, AI assistants connected to your store (through the Abilities API and MCP) can find a customer, create the order with shipping and taxes, email the payment link, check shipping rates and duplicate orders. "Make Mario an order for 2 red hoodies with the cheapest shipping and send him the pay link" just works. Only users who can edit orders can use them, and customer names, emails, phones and addresses are never sent to the AI service.
+* **Ready for AI agents:** AI assistants connected to your store (through the Abilities API and MCP) can find a customer, create the order with shipping and taxes, email the payment link, check shipping rates and duplicate orders. "Make Mario an order for 2 red hoodies with the cheapest shipping and send him the pay link" just works. Only users who can edit orders can use them, and customer names, emails, phones and addresses are never sent to the AI service.
 
 New orders open as drafts with WooCommerce's own "Create" button, exactly like a normal new order. Drafts you never create are cleaned up by WooCommerce after a few days.
 
@@ -69,7 +69,7 @@ WooCommerce's own "Order details" customer invoice email, with your email templa
 
 = Which abilities does it add for AI agents? =
 
-On WordPress 6.9 and later: find-customers, create-order, get-shipping-rates, set-shipping, email-pay-link and duplicate-order, under business-bloomer-advanced-manual-orders/. They run the same code as the order screen. Results refer to customers by ID only: names, emails, phone numbers and addresses stay on your site.
+Six: find-customers, create-order, get-shipping-rates, set-shipping, email-pay-link and duplicate-order, under business-bloomer-advanced-manual-orders/. They run the same code as the order screen. Results refer to customers by ID only: names, emails, phone numbers and addresses stay on your site.
 
 = Does it work with HPOS? =
 
