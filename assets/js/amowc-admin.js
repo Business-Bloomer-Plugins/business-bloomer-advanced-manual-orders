@@ -484,6 +484,12 @@ jQuery( function ( $ ) {
 	}
 
 	if ( $customer.length && $customer.hasClass( 'select2-hidden-accessible' ) ) {
+		// WooCommerce prints the saved customer with HTML entities, like "&ndash;", that its own
+		// select shows decoded. Decode them as text, so nothing in a name can turn into markup.
+		$customer.find( 'option' ).each( function () {
+			$( this ).text( $( '<textarea>' ).html( $( this ).text() ).val() );
+		} );
+
 		$customer.selectWoo( 'destroy' ).selectWoo( {
 			width: '100%',
 			allowClear: true,

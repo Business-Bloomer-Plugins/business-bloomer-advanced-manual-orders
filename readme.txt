@@ -79,6 +79,15 @@ Yes, with both order storage types.
 
 Add its currencies in the settings and they show at the top of the list. Developers can use the `amowc_store_currencies` filter.
 
+== Screenshots ==
+
+1. "Add order" asks for the customer first: registered customers and past guests, found by name, email, phone or company.
+2. The "Add a product" box: best sellers first, every variation listed on its own, one click to add.
+3. "Calculate shipping" shows the real rates of your shipping zones for these items and this address.
+4. Copy or email the payment link, and pick the order currency, right under the order status.
+5. Duplicate any order from the orders list, the preview or the order screen.
+6. The settings, under WooCommerce > Settings > Advanced > Advanced Manual Orders.
+
 == Changelog ==
 
 = 1.0.0 =

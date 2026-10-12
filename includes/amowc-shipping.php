@@ -56,6 +56,11 @@ function amowc_get_shipping_rates( $order, $destination ) {
 		$wc->cart = new WC_Cart();
 		remove_filter( 'woocommerce_cart_session_initialize', '__return_false' );
 
+		// WooCommerce loads the cart from the session the first time it's read, which would
+		// swap the order's items for the admin's own saved cart. Load it now, empty.
+		add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
+		$wc->cart->get_cart();
+
 		$contents = array();
 
 		foreach ( $order->get_items() as $item_id => $item ) {
@@ -111,6 +116,7 @@ function amowc_get_shipping_rates( $order, $destination ) {
 		$wc->customer = $saved['customer'];
 		$wc->session  = $saved['session'];
 		$wc->shipping()->reset_shipping();
+		remove_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
 	}
 
 	return $rates;
