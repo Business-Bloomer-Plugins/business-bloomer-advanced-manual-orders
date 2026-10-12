@@ -64,8 +64,8 @@ function amowc_skip_email_verification( $required, $order, $context = '' ) {
 }
 
 /**
- * On the pay page of an order in another currency, the store runs in that currency,
- * so payment methods check and charge the right one.
+ * On the pay page of an order created in the admin in another currency, the store runs in
+ * that currency, so payment methods check and charge the right one. Other orders are left alone.
  */
 function amowc_pay_page_currency() {
 	$order_id = absint( get_query_var( 'order-pay' ) );
@@ -79,7 +79,7 @@ function amowc_pay_page_currency() {
 
 	$order = wc_get_order( $order_id );
 
-	if ( ! $order || ! hash_equals( $order->get_order_key(), $key ) || get_option( 'woocommerce_currency' ) === $order->get_currency() ) {
+	if ( ! $order || 'admin' !== $order->get_created_via() || ! hash_equals( $order->get_order_key(), $key ) || get_option( 'woocommerce_currency' ) === $order->get_currency() ) {
 		return;
 	}
 
