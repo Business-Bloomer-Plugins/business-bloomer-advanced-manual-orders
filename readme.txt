@@ -12,7 +12,7 @@ Faster manual orders: find customers by phone or email, real shipping rates, ema
 
 == Description ==
 
-Taking an order by phone or email in WooCommerce means typing the shipping cost by hand, clicking Recalculate after every change, and hoping the customer can actually pay the link you send. Advanced Manual Orders fixes the order screen you already use.
+Creating a manual order from the WooCommerce admin is slow. The customer search misses phone numbers typed a different way and never lists past guests. Adding a product means a popup and a search with no prices. Shipping costs are typed by hand, and taxes only update when you click Recalculate. Advanced Manual Orders fixes the order screen you already use.
 
 https://youtu.be/RCZxM-ybwV0
 
