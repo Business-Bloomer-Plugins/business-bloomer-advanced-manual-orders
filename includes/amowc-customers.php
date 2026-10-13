@@ -1,7 +1,7 @@
 <?php
 /**
- * Customer search: registered customers and guests, by name, email, phone or company,
- * with their addresses ready to fill in.
+ * Customer search: registered customers and guests, by name, email, phone, company or
+ * address (billing or shipping), with their addresses ready to fill in.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -20,7 +20,7 @@ function amowc_rest_search_customers( $request ) {
  * Registered customers and guests matching a search, with their addresses.
  * Empty search: the customers of the latest orders.
  *
- * @param string $term Name, email, phone or company.
+ * @param string $term Name, email, phone, company, address, city or postcode.
  * @return array[] id ("12", or "o:345" for a guest), text, billing, shipping.
  */
 function amowc_find_customers( $term ) {
@@ -50,26 +50,44 @@ function amowc_find_customers( $term ) {
 	}
 
 	// Orders hold the addresses and phone numbers of guests, and of customers who never saved them.
-	$ids = array_merge( array_map( 'absint', wc_order_search( $term ) ), amowc_phone_order_ids( $term ) );
+	$ids = array_merge( array_map( 'absint', wc_order_search( $term ) ), amowc_address_order_ids( $term ) );
 	$ids = array_unique( $ids );
 	rsort( $ids );
 
-	foreach ( array_slice( $ids, 0, 60 ) as $id ) {
+	// Loaded together, newest first: one read instead of one per order.
+	$orders = $ids ? wc_get_orders(
+		array(
+			'type'     => 'shop_order',
+			'status'   => array_keys( wc_get_order_statuses() ),
+			'post__in' => array_slice( $ids, 0, 60 ),
+			'limit'    => 60,
+			'orderby'  => 'ID',
+			'order'    => 'DESC',
+		)
+	) : array();
+
+	foreach ( $orders as $order ) {
 		if ( count( $entries ) >= $limit ) {
 			break;
 		}
-		$order = wc_get_order( $id );
-		if ( $order && 'shop_order' === $order->get_type() && ! $order->has_status( array( 'auto-draft', 'checkout-draft', 'trash' ) ) ) {
-			amowc_add_customer_entry( $entries, $order );
-		}
+		amowc_add_customer_entry( $entries, $order );
 	}
 
 	return array_values( array_slice( $entries, 0, $limit ) );
 }
 
 /**
+ * Address fields the search looks in, besides WooCommerce's own order and customer search.
+ *
+ * @return string[] User meta keys, and order fields (the order meta key without its leading underscore).
+ */
+function amowc_search_fields() {
+	return array( 'billing_email', 'billing_phone', 'billing_first_name', 'billing_last_name', 'billing_company', 'billing_address_1', 'billing_city', 'billing_postcode', 'shipping_first_name', 'shipping_last_name', 'shipping_company', 'shipping_address_1', 'shipping_city', 'shipping_postcode' );
+}
+
+/**
  * Registered customers matching a search: WooCommerce's own search (login, email, name),
- * plus their billing email, phone, name and company.
+ * plus their saved billing and shipping details (amowc_search_fields()).
  *
  * @param string $term  Search.
  * @param int    $limit Maximum number of customers.
@@ -79,7 +97,7 @@ function amowc_search_customer_ids( $term, $limit ) {
 	$ids = WC_Data_Store::load( 'customer' )->search_customers( $term, $limit );
 
 	$meta = array( 'relation' => 'OR' );
-	foreach ( array( 'billing_email', 'billing_phone', 'billing_first_name', 'billing_last_name', 'billing_company' ) as $key ) {
+	foreach ( amowc_search_fields() as $key ) {
 		$meta[] = array(
 			'key'     => $key,
 			'value'   => $term,
@@ -126,24 +144,34 @@ function amowc_phone_pattern( $term ) {
 }
 
 /**
- * Orders whose billing phone matches a phone number search, however it was saved.
+ * Orders whose billing or shipping details (amowc_search_fields()) contain the search, or whose
+ * billing phone matches a phone number search however it was saved. One query.
  *
  * @param string $term Search.
  * @return int[]
  */
-function amowc_phone_order_ids( $term ) {
-	$pattern = amowc_phone_pattern( $term );
+function amowc_address_order_ids( $term ) {
+	$hpos    = class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	$clauses = array( 'relation' => 'OR' );
 
-	if ( ! $pattern ) {
-		return array();
+	foreach ( amowc_search_fields() as $field ) {
+		$clauses[] = array(
+			$hpos ? 'field' : 'key' => $hpos ? $field : '_' . $field,
+			'value'                 => $term,
+			'compare'               => 'LIKE',
+		);
 	}
 
-	$match = array(
-		'value'   => $pattern,
-		'compare' => 'REGEXP',
-	);
+	$pattern = amowc_phone_pattern( $term );
+	if ( $pattern ) {
+		$clauses[] = array(
+			$hpos ? 'field' : 'key' => $hpos ? 'billing_phone' : '_billing_phone',
+			'value'                 => $pattern,
+			'compare'               => 'REGEXP',
+		);
+	}
 
-	if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+	if ( $hpos ) {
 		$ids = wc_get_orders(
 			array(
 				'type'        => 'shop_order',
@@ -152,7 +180,7 @@ function amowc_phone_order_ids( $term ) {
 				'orderby'     => 'date',
 				'order'       => 'DESC',
 				'return'      => 'ids',
-				'field_query' => array( array( 'field' => 'billing_phone' ) + $match ),
+				'field_query' => $clauses,
 			)
 		);
 	} else {
@@ -166,7 +194,7 @@ function amowc_phone_order_ids( $term ) {
 				'order'       => 'DESC',
 				'fields'      => 'ids',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- customer search, admin only.
-				'meta_query'  => array( array( 'key' => '_billing_phone' ) + $match ),
+				'meta_query'  => $clauses,
 			)
 		);
 	}
@@ -212,7 +240,7 @@ function amowc_add_customer_entry( &$entries, $order, $user_id = 0 ) {
 
 	$entries[ 'g:' . $who ] = array(
 		'id'       => 'o:' . $order->get_id(),
-		'text'     => amowc_customer_label( $billing, true ),
+		'text'     => amowc_customer_label( $billing, true, $shipping ),
 		'billing'  => $billing,
 		'shipping' => $shipping,
 	);
@@ -260,29 +288,54 @@ function amowc_registered_customer_entry( $user_id ) {
 
 	return array(
 		'id'       => (string) $user_id,
-		'text'     => amowc_customer_label( $billing, false ),
+		'text'     => amowc_customer_label( $billing, false, $shipping ),
 		'billing'  => $billing,
 		'shipping' => $shipping,
 	);
 }
 
 /**
- * One line of the customer list: name, email, phone, city and country.
+ * One line of the customer list: name, email, phone and address, plus where orders ship to
+ * when that's someone or somewhere else, so similar customers can be told apart.
  *
- * @param array $billing Billing address.
- * @param bool  $guest   Whether this is a guest.
+ * @param array $billing  Billing address.
+ * @param bool  $guest    Whether this is a guest.
+ * @param array $shipping Shipping address.
  * @return string
  */
-function amowc_customer_label( $billing, $guest ) {
+function amowc_customer_label( $billing, $guest, $shipping = array() ) {
 	$name  = trim( $billing['first_name'] . ' ' . $billing['last_name'] );
-	$place = implode( ', ', array_filter( array( $billing['city'], $billing['country'] ) ) );
-	$parts = array_filter( array( $name ? $name : $billing['company'], $billing['email'], $billing['phone'], $place ) );
+	$parts = array_filter( array( $name ? $name : $billing['company'], $billing['email'], $billing['phone'], amowc_address_line( $billing ) ) );
+
+	$ship_to = amowc_address_line( $shipping, true );
+	if ( $ship_to && amowc_address_line( $billing, true ) !== $ship_to ) {
+		/* translators: %s: shipping name and address */
+		$parts[] = sprintf( __( 'Ships to %s', 'business-bloomer-advanced-manual-orders' ), $ship_to );
+	}
 
 	if ( $guest ) {
 		$parts[] = __( 'Guest', 'business-bloomer-advanced-manual-orders' );
 	}
 
 	return html_entity_decode( implode( ' · ', $parts ), ENT_QUOTES, 'UTF-8' );
+}
+
+/**
+ * An address on one line: street, postcode and city, country. With the name and company too if asked.
+ *
+ * @param array $address   Address.
+ * @param bool  $with_name Whether to start with the name and company.
+ * @return string
+ */
+function amowc_address_line( $address, $with_name = false ) {
+	$address = wp_parse_args( (array) $address, array_fill_keys( array( 'first_name', 'last_name', 'company', 'address_1', 'postcode', 'city', 'country' ), '' ) );
+	$parts   = array( $address['address_1'], trim( $address['postcode'] . ' ' . $address['city'] ), $address['country'] );
+
+	if ( $with_name ) {
+		array_unshift( $parts, trim( $address['first_name'] . ' ' . $address['last_name'] ), $address['company'] );
+	}
+
+	return implode( ', ', array_filter( $parts ) );
 }
 
 /**

@@ -178,7 +178,7 @@ if ( ! class_exists( 'AMOWC_Abilities' ) ) {
 				self::NS . '/find-customers',
 				array(
 					'label'               => __( 'Find customers', 'business-bloomer-advanced-manual-orders' ),
-					'description'         => __( 'Finds registered customers and past guests by name, email, phone (any format) or company, to start a manual order for them. Personal details are never returned: each match has a "customer" value to pass to create-order, its type and country. When there is more than one match, ask for the full email or phone number.', 'business-bloomer-advanced-manual-orders' ),
+					'description'         => __( 'Finds registered customers and past guests by name, email, phone (any format), company or address (billing or shipping, street, city or postcode), to start a manual order for them. Personal details are never returned: each match has a "customer" value to pass to create-order, its type and country. When there is more than one match, ask for the full email or phone number.', 'business-bloomer-advanced-manual-orders' ),
 					'category'            => 'business-bloomer',
 					'input_schema'        => array(
 						'type'                 => 'object',

@@ -75,8 +75,8 @@ function amowc_enqueue() {
 				'emailConfirm'  => __( 'Save the order and email the payment link to %s?', 'business-bloomer-advanced-manual-orders' ),
 				'noEmail'       => __( 'Add a billing email address first.', 'business-bloomer-advanced-manual-orders' ),
 				'tipEmailLink'  => __( 'Saves your changes first, then sends WooCommerce\'s customer invoice email, with the payment link, to the billing email. Same as Order actions > Send order details to customer.', 'business-bloomer-advanced-manual-orders' ),
-				'findCustomer'  => __( 'Name, email, phone or company', 'business-bloomer-advanced-manual-orders' ),
-				'tipCustomer'   => __( 'Finds registered customers and guests by name, email, phone or company. Picking one fills in their billing and shipping addresses.', 'business-bloomer-advanced-manual-orders' ),
+				'findCustomer'  => __( 'Name, email, phone, address or postcode', 'business-bloomer-advanced-manual-orders' ),
+				'tipCustomer'   => __( 'Finds registered customers and guests by name, email, phone, company or address (billing or shipping). Picking one fills in their billing and shipping addresses.', 'business-bloomer-advanced-manual-orders' ),
 				'addProduct'    => __( 'Add a product: type a name or SKU', 'business-bloomer-advanced-manual-orders' ),
 				'searching'     => __( 'Searching…', 'business-bloomer-advanced-manual-orders' ),
 				'noResults'     => __( 'No products found', 'business-bloomer-advanced-manual-orders' ),
@@ -126,7 +126,7 @@ function amowc_new_order_form() {
 				<div class="amowc-new-fields">
 					<p>
 						<label for="amowc_customer"><?php esc_html_e( 'Customer', 'business-bloomer-advanced-manual-orders' ); ?></label>
-						<select id="amowc_customer" name="amowc_customer" data-placeholder="<?php esc_attr_e( 'Guest, or search by name, email, phone or company', 'business-bloomer-advanced-manual-orders' ); ?>" style="width:100%"></select>
+						<select id="amowc_customer" name="amowc_customer" data-placeholder="<?php esc_attr_e( 'Guest, or search by name, email, phone, address or postcode', 'business-bloomer-advanced-manual-orders' ); ?>" style="width:100%"></select>
 						<span class="description"><?php esc_html_e( 'Registered customers and past guests. Their billing and shipping addresses are filled in.', 'business-bloomer-advanced-manual-orders' ); ?></span>
 					</p>
 

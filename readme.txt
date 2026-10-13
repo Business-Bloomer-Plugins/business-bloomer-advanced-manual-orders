@@ -4,7 +4,7 @@ Tags: manual order, phone order, admin order, currency, add products
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ https://youtu.be/RCZxM-ybwV0
 = What it adds =
 
 * **New order form:** click "Add order", on the orders list or on an order. Start from a past order (pick from your latest 10 or search by name, email or number) and repeat it whole, or copy its products for a customer and currency you choose. Saved addresses are filled in.
-* **Find any customer, fast:** search by name, email, phone or company, on the new order form and in the order's Customer field. Registered customers and past guests are both listed, and phone numbers match however they were typed ("0915550101" finds "091-555-0101"). Pick one and their billing and shipping addresses are filled in on the spot. Pick a guest and the order stays a guest order.
+* **Find any customer, fast:** search by name, email, phone, company or address (billing or shipping: street, city, postcode), on the new order form and in the order's Customer field. Registered customers and past guests are both listed, and phone numbers match however they were typed ("0915550101" finds "091-555-0101"). Pick one and their billing and shipping addresses are filled in on the spot. Pick a guest and the order stays a guest order.
 * **Add products in one click:** an "Add a product" box always sits above the order items. Best sellers come first, or type a name or SKU. Each pick adds one, pick it again for more. Every variation is listed on its own, "Any" attributes included, so there's nothing else to pick. Pick a product that's already on the order and its quantity goes up.
 * **Currency per order:** turn on the currency selector (one click, or in the settings) and pick any currency for a manual order, on the form or on the order screen while the order is unpaid. The currencies your store sells in come first, read from WooPayments, WPML, Aelia, CURCY, FOX, YayCurrency, TIV.NET, Price Based on Country and Booster.
 * **Real shipping rates:** "Calculate shipping", next to Recalculate, shows the rates of your shipping zones for these items and this address, the same ones checkout would show. Pick one and it's added with its tax.
@@ -91,6 +91,10 @@ Add its currencies in the settings and they show at the top of the list. Develop
 6. The settings, under WooCommerce > Settings > Advanced > Advanced Manual Orders.
 
 == Changelog ==
+
+= 1.0.1 =
+* Customer search also finds customers by shipping name, company and address, and by billing address, city and postcode, for registered customers and guests.
+* Search results show where orders ship to when that is someone or somewhere else.
 
 = 1.0.0 =
 * First release.

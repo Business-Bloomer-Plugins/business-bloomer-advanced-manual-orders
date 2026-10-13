@@ -99,7 +99,7 @@ jQuery( function ( $ ) {
 			ajax: source( 'orders' )
 		} );
 
-		// Registered customers and past guests, by name, email, phone or company.
+		// Registered customers and past guests, by name, email, phone, company or address.
 		$form.find( '#amowc_customer' ).selectWoo( {
 			width: '100%',
 			allowClear: true,
