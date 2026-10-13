@@ -95,6 +95,7 @@ Add its currencies in the settings and they show at the top of the list. Develop
 = 1.0.1 =
 * Customer search also finds customers by shipping name, company and address, and by billing address, city and postcode, for registered customers and guests.
 * Search results show where orders ship to when that is someone or somewhere else.
+* Developers: new amowc_customers filter on the customer search results.
 
 = 1.0.0 =
 * First release.

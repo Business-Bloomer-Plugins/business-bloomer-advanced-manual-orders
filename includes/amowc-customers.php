@@ -42,7 +42,7 @@ function amowc_find_customers( $term ) {
 			amowc_add_customer_entry( $entries, $order );
 		}
 
-		return array_values( array_slice( $entries, 0, 10 ) );
+		return amowc_filter_customers( array_values( array_slice( $entries, 0, 10 ) ), $term );
 	}
 
 	foreach ( amowc_search_customer_ids( $term, $limit ) as $user_id ) {
@@ -73,7 +73,24 @@ function amowc_find_customers( $term ) {
 		amowc_add_customer_entry( $entries, $order );
 	}
 
-	return array_values( array_slice( $entries, 0, $limit ) );
+	return amowc_filter_customers( array_values( array_slice( $entries, 0, $limit ) ), $term );
+}
+
+/**
+ * Lets other plugins add to the customer search results, for example a staff note.
+ *
+ * @param array[] $customers Results: id, text, billing, shipping.
+ * @param string  $term      Search.
+ * @return array[]
+ */
+function amowc_filter_customers( $customers, $term ) {
+	/**
+	 * Customer search results, for the customer pickers.
+	 *
+	 * @param array[] $customers Each with id ("12", or "o:345" for a guest), text, billing, shipping.
+	 * @param string  $term      Search, empty for the latest customers.
+	 */
+	return (array) apply_filters( 'amowc_customers', $customers, $term );
 }
 
 /**
