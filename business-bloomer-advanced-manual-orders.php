@@ -2,7 +2,7 @@
 /**
  * Plugin Name:          Business Bloomer Advanced Manual Orders for WooCommerce
  * Description:          Create manual orders in WooCommerce without the pain: pick a currency, get real shipping rates, taxes that recalculate on their own, one-click duplicate and reorder, and payment links that work without login.
- * Version:              1.0.1
+ * Version:              1.0.2
  * Requires at least:    6.9
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'AMOWC_VERSION', '1.0.1' );
+define( 'AMOWC_VERSION', '1.0.2' );
 define( 'AMOWC_PLUGIN_FILE', __FILE__ );
 define( 'AMOWC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AMOWC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

@@ -4,7 +4,7 @@ Tags: manual order, phone order, admin order, currency, add products
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,10 @@ Add its currencies in the settings and they show at the top of the list. Develop
 6. The settings, under WooCommerce > Settings > Advanced > Advanced Manual Orders.
 
 == Changelog ==
+
+= 1.0.2 =
+
+* The settings page and the Plugins screen now show what Advanced Manual Orders Pro adds. Both are hidden when Pro is active.
 
 = 1.0.1 =
 * The customer search now also finds people by their shipping name, company, address, city or postcode, and by their billing address, city or postcode. This works for registered customers and past guests.
