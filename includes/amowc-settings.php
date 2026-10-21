@@ -7,6 +7,7 @@ defined( 'ABSPATH' ) || exit;
 
 add_filter( 'woocommerce_get_sections_advanced', 'amowc_add_section' );
 add_filter( 'woocommerce_get_settings_advanced', 'amowc_section_settings', 10, 2 );
+add_action( 'woocommerce_admin_field_amowc_pro', 'amowc_pro_features' );
 
 /**
  * Returns a setting, falling back to its default.
@@ -151,7 +152,52 @@ function amowc_section_settings( $settings, $section ) {
 		);
 	}
 
+	if ( ! amowc_pro_active() ) {
+		$fields[] = array(
+			'type' => 'amowc_pro',
+			'id'   => 'amowc_pro',
+		);
+	}
+
 	return apply_filters( 'amowc_settings_fields', $fields );
+}
+
+/**
+ * True when Advanced Manual Orders Pro is active.
+ *
+ * @return bool
+ */
+function amowc_pro_active() {
+	return defined( 'AMOWCP_PLUGIN_FILE' );
+}
+
+/**
+ * URL of the Pro plugin page.
+ *
+ * @return string
+ */
+function amowc_pro_url() {
+	return 'https://www.businessbloomer.com/plugins/woocommerce-advanced-manual-orders-pro/';
+}
+
+/**
+ * What Pro adds, shown below the settings while Pro is not active.
+ */
+function amowc_pro_features() {
+	$features = array(
+		__( 'Customers pay at your real checkout: the payment link fills their cart, so they can add their address, use a coupon and pick any payment method', 'business-bloomer-advanced-manual-orders' ),
+		__( 'Choose which payment methods the payment link offers, make it expire, and send reminders until the order is paid', 'business-bloomer-advanced-manual-orders' ),
+		__( 'Let customers change their address and shipping before they pay', 'business-bloomer-advanced-manual-orders' ),
+		__( 'Order on your shop as a customer or a guest, then record a payment taken over the phone with a staff-only payment method', 'business-bloomer-advanced-manual-orders' ),
+		__( 'Keep notes about each customer, shown on all their orders', 'business-bloomer-advanced-manual-orders' ),
+		__( 'Prices you set by hand stay as they are when you add a coupon or change quantities', 'business-bloomer-advanced-manual-orders' ),
+	);
+
+	echo '<h2>' . esc_html__( 'Get more with Advanced Manual Orders Pro', 'business-bloomer-advanced-manual-orders' ) . '</h2><ul style="list-style:disc;margin-left:20px">';
+	foreach ( $features as $feature ) {
+		echo '<li>' . esc_html( $feature ) . '</li>';
+	}
+	echo '</ul><p><a href="' . esc_url( amowc_pro_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'See everything Pro does', 'business-bloomer-advanced-manual-orders' ) . '</a></p>';
 }
 
 /**
