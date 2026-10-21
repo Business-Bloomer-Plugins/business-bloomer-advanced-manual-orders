@@ -37,6 +37,16 @@ New orders open as drafts with WooCommerce's own "Create" button, exactly like a
 
 WooCommerce > Settings > Advanced > Advanced Manual Orders.
 
+= Advanced Manual Orders Pro =
+
+[Advanced Manual Orders Pro](https://www.businessbloomer.com/plugins/woocommerce-advanced-manual-orders-pro/) adds:
+
+* **Pay at your real checkout:** the payment link fills the customer's cart, so they can add their address, use a coupon and pay with any payment method.
+* **Payment link options:** choose which payment methods it offers, make it expire, and send reminders until the order is paid. Customers can also change their address and shipping before they pay.
+* **Order as a customer or guest:** build the order on your shop, as they would, then record a payment taken over the phone with a staff-only payment method and its transaction reference.
+* **Notes about each customer:** shown on all their orders, with a reminder to confirm a detail with the caller.
+* **Price lock:** prices you set by hand stay as they are when you add a coupon or change quantities.
+
 == Installation ==
 
 1. Install and activate the plugin from Plugins > Add New, or upload the zip.
@@ -47,7 +57,7 @@ WooCommerce > Settings > Advanced > Advanced Manual Orders.
 
 = Are prices converted when I change the currency? =
 
-No. The currency is changed and prices stay as entered, so type the prices you agreed with the customer. Automatic conversion at exchange rates is coming in the Pro version.
+No. The currency is changed and prices stay as entered, so type the prices you agreed with the customer.
 
 = Which shipping methods work? =
 

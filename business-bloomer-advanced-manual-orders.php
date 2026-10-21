@@ -54,6 +54,7 @@ function amowc_init() {
 	require_once AMOWC_PLUGIN_DIR . 'includes/class-amowc-abilities.php';
 
 	add_filter( 'plugin_action_links_' . plugin_basename( AMOWC_PLUGIN_FILE ), 'amowc_action_links' );
+	add_filter( 'plugin_row_meta', 'amowc_row_meta', 10, 2 );
 }
 
 /**
@@ -64,5 +65,19 @@ function amowc_init() {
  */
 function amowc_action_links( $links ) {
 	array_unshift( $links, '<a href="' . esc_url( amowc_settings_url() ) . '">' . esc_html__( 'Settings', 'business-bloomer-advanced-manual-orders' ) . '</a>' );
+	return $links;
+}
+
+/**
+ * Adds a "Get Pro" link under the plugin description while Pro is not active.
+ *
+ * @param array  $links Plugin row meta links.
+ * @param string $file  Plugin file.
+ * @return array
+ */
+function amowc_row_meta( $links, $file ) {
+	if ( plugin_basename( AMOWC_PLUGIN_FILE ) === $file && ! amowc_pro_active() ) {
+		$links[] = '<a href="' . esc_url( amowc_pro_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'Get Pro', 'business-bloomer-advanced-manual-orders' ) . '</a>';
+	}
 	return $links;
 }
