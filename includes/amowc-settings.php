@@ -74,10 +74,10 @@ function amowc_section_settings( $settings, $section ) {
 
 	$fields = array(
 		array(
-			'title' => __( 'Advanced Manual Orders', 'business-bloomer-advanced-manual-orders' ),
+			'title' => __( 'New orders', 'business-bloomer-advanced-manual-orders' ),
 			'type'  => 'title',
-			'desc'  => __( 'How orders you create in the admin behave.', 'business-bloomer-advanced-manual-orders' ),
-			'id'    => 'amowc_options',
+			'desc'  => __( 'The "Add order" form, Duplicate and Repeat.', 'business-bloomer-advanced-manual-orders' ),
+			'id'    => 'amowc_new_orders',
 		),
 		array(
 			'title'   => __( 'New order form', 'business-bloomer-advanced-manual-orders' ),
@@ -107,11 +107,31 @@ function amowc_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
+			'type' => 'sectionend',
+			'id'   => 'amowc_new_orders',
+		),
+		array(
+			'title' => __( 'Order edit page', 'business-bloomer-advanced-manual-orders' ),
+			'type'  => 'title',
+			'desc'  => __( 'While you add items, change quantities or the address.', 'business-bloomer-advanced-manual-orders' ),
+			'id'    => 'amowc_edit_order',
+		),
+		array(
 			'title'   => __( 'Taxes and totals', 'business-bloomer-advanced-manual-orders' ),
 			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'business-bloomer-advanced-manual-orders' ),
 			'id'      => 'amowc_auto_totals',
 			'type'    => 'checkbox',
 			'default' => 'yes',
+		),
+		array(
+			'type' => 'sectionend',
+			'id'   => 'amowc_edit_order',
+		),
+		array(
+			'title' => __( 'Currency', 'business-bloomer-advanced-manual-orders' ),
+			'type'  => 'title',
+			'desc'  => __( 'The currency of a manual order.', 'business-bloomer-advanced-manual-orders' ),
+			'id'    => 'amowc_currency_options',
 		),
 		array(
 			'title'   => __( 'Currency selector', 'business-bloomer-advanced-manual-orders' ),
@@ -131,6 +151,16 @@ function amowc_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
+			'type' => 'sectionend',
+			'id'   => 'amowc_currency_options',
+		),
+		array(
+			'title' => __( 'Payment link', 'business-bloomer-advanced-manual-orders' ),
+			'type'  => 'title',
+			'desc'  => __( 'The link customers use to pay a manual order.', 'business-bloomer-advanced-manual-orders' ),
+			'id'    => 'amowc_payment_link',
+		),
+		array(
 			'title'    => __( 'Payment link', 'business-bloomer-advanced-manual-orders' ),
 			'desc'     => __( 'Customers can pay without logging in', 'business-bloomer-advanced-manual-orders' ),
 			'id'       => 'amowc_guest_pay',
@@ -140,15 +170,16 @@ function amowc_section_settings( $settings, $section ) {
 		),
 		array(
 			'type' => 'sectionend',
-			'id'   => 'amowc_options',
+			'id'   => 'amowc_payment_link',
 		),
 	);
 
 	// Until WooCommerce 11.3, see amowc-tax-fix.php.
 	if ( amowc_same_price_fix_needed() ) {
+		$position = array_search( 'amowc_auto_totals', wp_list_pluck( $fields, 'id' ), true );
 		array_splice(
 			$fields,
-			-1,
+			$position + 1,
 			0,
 			array(
 				array(
