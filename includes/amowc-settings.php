@@ -22,6 +22,7 @@ function amowc_get_option( $key ) {
 		'guest_pay'      => 'yes',
 		'currency'       => 'no',
 		'dup_status'     => 'pending',
+		'copy_fields'    => array(),
 		'currencies'     => array(),
 		'same_price_fix' => 'yes',
 	);
@@ -96,6 +97,16 @@ function amowc_section_settings( $settings, $section ) {
 			'desc_tip' => true,
 		),
 		array(
+			'title'    => __( 'Also copy these fields', 'business-bloomer-advanced-manual-orders' ),
+			'desc'     => __( 'Hidden order fields, like a VAT number, to copy to the new order when you duplicate or repeat an order, or start a new order for the same customer. The list shows the fields found on your orders.', 'business-bloomer-advanced-manual-orders' ),
+			'id'       => 'amowc_copy_fields',
+			'type'     => 'multiselect',
+			'class'    => 'wc-enhanced-select',
+			'options'  => 'amowc' === $section ? amowc_order_meta_keys() : array(),
+			'default'  => array(),
+			'desc_tip' => true,
+		),
+		array(
 			'title'   => __( 'Taxes and totals', 'business-bloomer-advanced-manual-orders' ),
 			'desc'    => __( 'Recalculate automatically when items, coupons or the address change', 'business-bloomer-advanced-manual-orders' ),
 			'id'      => 'amowc_auto_totals',
@@ -160,6 +171,40 @@ function amowc_section_settings( $settings, $section ) {
 	}
 
 	return apply_filters( 'amowc_settings_fields', $fields );
+}
+
+/**
+ * Custom field names found on orders, for the "Also copy these fields" setting.
+ * Fields WooCommerce stores itself (addresses, totals, dates) are left out.
+ *
+ * @return array Field names as keys and labels.
+ */
+function amowc_order_meta_keys() {
+	global $wpdb;
+
+	$keys = get_transient( 'amowc_order_meta_keys' );
+
+	if ( ! is_array( $keys ) ) {
+		$hpos = class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- distinct field names, cached below.
+		if ( $hpos ) {
+			$keys = $wpdb->get_col( "SELECT DISTINCT meta_key FROM {$wpdb->prefix}wc_orders_meta LIMIT 500" );
+		} else {
+			$keys = $wpdb->get_col( "SELECT DISTINCT pm.meta_key FROM {$wpdb->postmeta} pm INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE p.post_type = 'shop_order' LIMIT 500" );
+		}
+		// phpcs:enable
+
+		$internal = WC_Data_Store::load( 'order' )->get_internal_meta_keys();
+		$keys     = array_values( array_diff( $keys, $internal, array( '_edit_lock', '_edit_last' ) ) );
+		sort( $keys );
+		set_transient( 'amowc_order_meta_keys', $keys, HOUR_IN_SECONDS );
+	}
+
+	// Saved fields stay listed even when no order has them anymore.
+	$keys = array_unique( array_merge( (array) amowc_get_option( 'copy_fields' ), $keys ) );
+
+	return array_combine( $keys, $keys );
 }
 
 /**
