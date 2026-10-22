@@ -61,6 +61,15 @@ function amowc_create_draft( $args ) {
 		$order->set_address( $source->get_address( 'billing' ), 'billing' );
 		$order->set_address( $source->get_address( 'shipping' ), 'shipping' );
 		$order->set_currency( $source->get_currency() );
+
+		// Fields picked in the settings, like a VAT number, belong to the customer.
+		if ( 'customer' === $args['copy'] ) {
+			foreach ( (array) amowc_get_option( 'copy_fields' ) as $key ) {
+				if ( $source->meta_exists( $key ) ) {
+					$order->update_meta_data( $key, $source->get_meta( $key ) );
+				}
+			}
+		}
 	} elseif ( '' !== (string) $args['customer'] ) {
 		amowc_apply_picked_customer( $order, (string) $args['customer'] );
 	}
@@ -119,14 +128,17 @@ function amowc_create_draft( $args ) {
  * Whether a custom field of an order or line item goes to the copy. Visible fields, like
  * variation attributes or product options, are copied. Hidden ones (starting with _) hold
  * what was added while the original was paid and processed, like invoice numbers,
- * license keys, tracking numbers and stock changes, so they stay with the original.
+ * license keys, tracking numbers and stock changes, so they stay with the original,
+ * unless they are picked in the "Also copy these fields" setting.
  *
  * @param string                 $key    Meta key.
  * @param WC_Order|WC_Order_Item $owner  Order or line item it belongs to.
  * @return bool
  */
 function amowc_copy_meta( $key, $owner ) {
-	return (bool) apply_filters( 'amowc_copy_meta', '_' !== substr( $key, 0, 1 ), $key, $owner );
+	$copy = '_' !== substr( $key, 0, 1 ) || ( $owner instanceof WC_Order && in_array( $key, (array) amowc_get_option( 'copy_fields' ), true ) );
+
+	return (bool) apply_filters( 'amowc_copy_meta', $copy, $key, $owner );
 }
 
 /**
