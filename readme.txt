@@ -4,7 +4,7 @@ Tags: manual order, phone order, admin order, currency, add products
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,11 @@ Add its currencies in the settings and they show at the top of the list. Develop
 6. The settings, under WooCommerce > Settings > Advanced > Advanced Manual Orders.
 
 == Changelog ==
+
+= 1.0.3 =
+
+* New: "Also copy these fields" in the settings. Pick hidden order fields, like a VAT number, and they are copied when you duplicate or repeat an order, or start a new order for the same customer.
+* The settings page is now split into sections: New orders, Order edit page, Currency and Payment link.
 
 = 1.0.2 =
 
